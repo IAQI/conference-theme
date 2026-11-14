@@ -95,7 +95,7 @@
 		{{ range partial "program/speakers.html" (dict "keys" $page.Params.speakers "year" $year) }}
 		<li class="speaker">
 			<div class="speaker-img" style="background-image: url({{ .Params.photoURL }});"></div>
-			<strong class="speaker-name">{{ .Params.name }}</strong>
+			<em class="speaker-name">{{ .Params.name }}</em>
 		</li>
 		{{ end }}
 	</ul>
