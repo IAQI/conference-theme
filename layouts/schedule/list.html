@@ -8,10 +8,21 @@
            end: '12:30'             # optional
            location: room_140       # optional, key in locations-YEAR.yml (or a list)
 
-     Sessions starting at the same time are shown side by side (parallel tracks). */}}
+     Sessions starting at the same time are shown side by side (parallel tracks).
+
+     Optional data/topics-YEAR.yml colours sessions by topic area (a strip on
+     the left of the card, and a legend above the schedule):
+
+     - key: algorithms
+       name: Algorithms
+       color: "#e6194b"
+       sessions: [Algorithms, Optimization]   # session titles in this area
+
+     A session page can also name its area directly with `topic: <key>`. */}}
 {{ $currentYear := partial "program/year.html" . }}
 {{ $scheduleKey := printf "schedule-%s" $currentYear }}
 {{ $schedule := index site.Data $scheduleKey | default slice }}
+{{ $topics := index site.Data (printf "topics-%s" $currentYear) | default slice }}
 
 {{ $city := (index site.Params $currentYear).city }}
 {{ $timeanddate_cityid := (index site.Params $currentYear).timeanddate_cityid }}
@@ -49,6 +60,12 @@ City id: {{ $timeanddate_cityid }}
 	</div>
 	{{ end }}
 
+	{{ with $topics }}
+	<ul class="topic-legend" aria-label="Topics">
+		{{ range . }}<li style="{{ printf "--topic-color: %s" .color | safeCSS }}">{{ .name }}</li>{{ end }}
+	</ul>
+	{{ end }}
+
 	{{ with $.Params.suggestion }}<i>{{ . }}</i>{{ end }}
 
 	{{ range $day := . }}
@@ -83,7 +100,19 @@ City id: {{ $timeanddate_cityid }}
 				{{ if or $p.papers $p.speakers $p.videoId $p.videoIds $p.presentation $p.presentations (ne (strings.TrimSpace (string $sessionPage.Content)) "") }}
 					{{ $classes = $classes | append "has-page" }}
 				{{ end }}
-				<div class="{{ delimit $classes " " }}">
+				{{/* topic area: the page's `topic:` key, else the area listing its title */}}
+				{{ $topic := dict }}
+				{{ with $p.topic }}
+					{{ range first 1 (where $topics "key" .) }}{{ $topic = . }}{{ end }}
+				{{ else }}
+					{{ range $topics }}{{ if in (.sessions | default slice) $sessionPage.Title }}{{ $topic = . }}{{ end }}{{ end }}
+				{{ end }}
+				{{ $style := "" }}
+				{{ with $topic.color }}
+					{{ $classes = $classes | append "has-topic" (printf "topic-%s" (anchorize $topic.key)) }}
+					{{ $style = printf "--topic-color: %s" . }}
+				{{ end }}
+				<div class="{{ delimit $classes " " }}"{{ with $style }} style="{{ . | safeCSS }}"{{ end }}{{ with $topic.name }} title="{{ . }}"{{ end }}>
 					<span class="startt">
 						<span class="hh">{{ index $hhmm 0 }}</span>
 						<span class="mm">{{ index $hhmm 1 }}</span>
