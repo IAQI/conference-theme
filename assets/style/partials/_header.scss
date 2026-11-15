@@ -94,6 +94,12 @@ body > header {
       &:hover .submenu {
         display: block;
       }
+
+      /* the last dropdown (About) opens to the left, so it stays on screen */
+      &.has-children:last-child > .submenu {
+        left: auto;
+        right: 0;
+      }
     }
 
     a {
@@ -121,6 +127,10 @@ body > header {
       list-style: none;
       padding: 0;
       margin: 0;
+      /* as wide as the longest entry, so entries stay on one line */
+      width: max-content;
+      min-width: 100%;
+      white-space: nowrap;
 
       li {
         // padding: 8px 16px;
@@ -213,6 +223,7 @@ body > header {
         top: 0;
         left: 0;
         width: 100%;
+        white-space: normal; // long entries may wrap on phones
         box-shadow: none;
         background: transparent;
         display: none; // hide by default
