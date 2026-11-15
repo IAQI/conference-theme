@@ -100,13 +100,8 @@ City id: {{ $timeanddate_cityid }}
 				{{ if or $p.papers $p.speakers $p.videoId $p.videoIds $p.presentation $p.presentations (ne (strings.TrimSpace (string $sessionPage.Content)) "") }}
 					{{ $classes = $classes | append "has-page" }}
 				{{ end }}
-				{{/* topic area: the page's `topic:` key, else the area listing its title */}}
-				{{ $topic := dict }}
-				{{ with $p.topic }}
-					{{ range first 1 (where $topics "key" .) }}{{ $topic = . }}{{ end }}
-				{{ else }}
-					{{ range $topics }}{{ if in (.sessions | default slice) $sessionPage.Title }}{{ $topic = . }}{{ end }}{{ end }}
-				{{ end }}
+				{{/* topic area (data/topics-YEAR.yml) */}}
+				{{ $topic := partial "program/topic.html" (dict "page" $sessionPage "year" $currentYear) }}
 				{{ $style := "" }}
 				{{ with $topic.color }}
 					{{ $classes = $classes | append "has-topic" (printf "topic-%s" (anchorize $topic.key)) }}

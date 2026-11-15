@@ -25,12 +25,18 @@ RelPermalink: {{ .RelPermalink }}
 
 <section class="talk">
 
+	{{/* topic area (data/topics-YEAR.yml): the same colour strip as on the
+	     schedule card, and the area's name */}}
+	{{ $topic := partial "program/topic.html" (dict "page" . "year" $currentYear) }}
+	{{ $headerClasses := slice }}
+	{{ with .Params.tags }}{{ $headerClasses = $headerClasses | append (printf "tag-%s" (anchorize (delimit . ""))) }}{{ end }}
+	{{ with $topic.color }}{{ $headerClasses = $headerClasses | append "has-topic" }}{{ end }}
+	<header{{ with $headerClasses }} class="{{ delimit . " " }}"{{ end }}{{ with $topic.color }} style="{{ printf "--topic-color: %s" . | safeCSS }}"{{ end }}>
 	{{ if .Params.tags }}
-	<header class="tag-{{ anchorize (delimit .Params.tags "" ) }}">
 	<div class="tags">{{- range .Params.tags -}}{{- range first 1 (where site.Data.categories "key" .) -}}<span>{{ .name }}</span>{{- end -}}{{- end -}}</div>
-	{{ else }}
-	<header>
 	{{ end }}
+	{{/* the area's name, unless the session is called the same */}}
+	{{ if and $topic.color (ne $topic.name .Title) }}<span class="topic-chip">{{ $topic.name }}</span>{{ end }}
 
 	<h1 class="text">{{ .Title }}</h1>
 	<span class="language {{ anchorize .Params.language }}"></span>
