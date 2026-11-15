@@ -9,6 +9,7 @@ body > header {
   .top-content {
     max-width: var(--theJdrSize);
     margin: 0 auto;
+    padding: 0 var(--space-4); // logo and menu icon keep off the screen edge
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
