@@ -221,6 +221,34 @@
     &.tag-notice > a h4 {
       font-weight: 700;
     }
+
+    /* topic area (data/topics-YEAR.yml): a strip on the left of the card */
+    &.has-topic > a {
+      border-left: 6px solid var(--topic-color);
+    }
+  }
+
+  /* legend of the topic areas, above the schedule */
+  .topic-legend {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-2) var(--space-4);
+    margin: var(--space-3) 0 0;
+    padding: 0 var(--space-4);
+    font-size: .9em;
+
+    li::before {
+      content: "";
+      display: inline-block;
+      width: .9em;
+      height: .9em;
+      margin-right: .4em;
+      vertical-align: -.1em;
+      border-radius: 2px;
+      background: var(--topic-color);
+    }
   }
 
   /* sessions running in parallel: centred bold title and room,
@@ -297,9 +325,16 @@
 
 @include mq.mq($until: lg) {
   .section.schedule {
+    /* Room on the left for the start times (placed 4.5ch of their 2em font,
+       i.e. 9ch, left of the cards), leaving the same 1rem gutter on both
+       sides of the screen. */
     main > section.schedule {
       --container-margin: 0em;
-      margin: 1rem .5rem 2rem 2em;
+      margin: 1rem .5rem 2rem calc(9ch + .5rem);
+    }
+
+    ul.talks {
+      padding-left: 0;
     }
 
     .session {

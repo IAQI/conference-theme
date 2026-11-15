@@ -1,0 +1,13 @@
+{{/* The topic area of a session (data/topics-YEAR.yml), or an empty dict.
+     Expects dict "page" (the session page) and "year". The page's own
+     `topic: <key>` wins; otherwise the area whose `sessions` lists its title.
+     Returns {key, name, color, sessions}. */}}
+{{ $topics := index site.Data (printf "topics-%s" .year) | default slice }}
+{{ $page := .page }}
+{{ $topic := dict }}
+{{ with $page.Params.topic }}
+	{{ range first 1 (where $topics "key" .) }}{{ $topic = . }}{{ end }}
+{{ else }}
+	{{ range $topics }}{{ if in (.sessions | default slice) $page.Title }}{{ $topic = . }}{{ end }}{{ end }}
+{{ end }}
+{{ return $topic }}

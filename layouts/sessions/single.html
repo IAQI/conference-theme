@@ -25,12 +25,18 @@ RelPermalink: {{ .RelPermalink }}
 
 <section class="talk">
 
+	{{/* topic area (data/topics-YEAR.yml): the same colour strip as on the
+	     schedule card, and the area's name */}}
+	{{ $topic := partial "program/topic.html" (dict "page" . "year" $currentYear) }}
+	{{ $headerClasses := slice }}
+	{{ with .Params.tags }}{{ $headerClasses = $headerClasses | append (printf "tag-%s" (anchorize (delimit . ""))) }}{{ end }}
+	{{ with $topic.color }}{{ $headerClasses = $headerClasses | append "has-topic" }}{{ end }}
+	<header{{ with $headerClasses }} class="{{ delimit . " " }}"{{ end }}{{ with $topic.color }} style="{{ printf "--topic-color: %s" . | safeCSS }}"{{ end }}>
 	{{ if .Params.tags }}
-	<header class="tag-{{ anchorize (delimit .Params.tags "" ) }}">
 	<div class="tags">{{- range .Params.tags -}}{{- range first 1 (where site.Data.categories "key" .) -}}<span>{{ .name }}</span>{{- end -}}{{- end -}}</div>
-	{{ else }}
-	<header>
 	{{ end }}
+	{{/* the area's name, unless the session is called the same */}}
+	{{ if and $topic.color (ne $topic.name .Title) }}<span class="topic-chip">{{ $topic.name }}</span>{{ end }}
 
 	<h1 class="text">{{ .Title }}</h1>
 	<span class="language {{ anchorize .Params.language }}"></span>
@@ -47,6 +53,7 @@ RelPermalink: {{ .RelPermalink }}
 		{{ if not (hasPrefix .File.TranslationBaseName "__") }}
 			{{/* when is this session running? It may appear several times. */}}
 			{{ $days := slice }}
+			{{ $locations := slice }}
 			{{ $schedule := index site.Data (printf "schedule-%s" $currentYear) | default slice }}
 			{{ range $day := $schedule }}
 				{{ $ranges := slice }}
@@ -59,6 +66,9 @@ RelPermalink: {{ .RelPermalink }}
 						{{ end }}
 					{{ end }}
 					{{ if eq $slot.session $key }}
+						{{ with $slot.location }}
+							{{ if reflect.IsSlice . }}{{ $locations = $locations | append . }}{{ else }}{{ $locations = $locations | append (slice .) }}{{ end }}
+						{{ end }}
 						{{ if $slot.end }}
 							{{ $ranges = $ranges | append (printf "%s - %s" $slot.time $slot.end) }}
 						{{ else }}
@@ -73,6 +83,14 @@ RelPermalink: {{ .RelPermalink }}
 			{{ end }}
 			{{ with $days }}
 				<div class="time">{{ delimit . "; " }}</div>
+				{{/* where: the room(s) of its slots, each once; no line when no
+				     room has a name (no location, an unknown key, or an empty label) */}}
+				{{ with $locations | uniq }}
+					{{ $rooms := partial "program/session-locations.html" (dict "location" . "year" $currentYear) }}
+					{{ with strings.TrimSpace (string $rooms) }}
+				<div class="room">{{ . | safeHTML }}</div>
+					{{ end }}
+				{{ end }}
 			{{ else }}
 				{{ warnf "session %q is not in schedule-%s" $key $currentYear }}
 			{{ end }}

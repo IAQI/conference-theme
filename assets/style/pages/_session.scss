@@ -22,6 +22,26 @@
     content: 'Time : ';
   }
 
+  /* the room(s), from the schedule: "Room : Label, description" */
+  .room {
+    &::before {
+      content: 'Room : ';
+    }
+
+    /* label and description on one line, without the space between them */
+    .location {
+      display: inline-flex;
+    }
+
+    .location-description::before {
+      content: ', ';
+    }
+
+    .location + .location::before {
+      content: '; ';
+    }
+  }
+
   .paper-list {
     line-height: 1.5rem;
   }
@@ -86,6 +106,31 @@
         /* hide the chip when the session's tag has no label */
         &:empty {
           display: none;
+        }
+      }
+
+      /* topic area (data/topics-YEAR.yml): the strip of the schedule card,
+         and the area's name with a colour square, as in the legend */
+      &.has-topic {
+        border-left: 6px solid var(--topic-color);
+        padding-left: var(--space-3);
+        border-radius: 0;
+      }
+
+      .topic-chip {
+        margin-right: 1ch;
+        white-space: nowrap;
+        font-size: .9em;
+
+        &::before {
+          content: "";
+          display: inline-block;
+          width: .9em;
+          height: .9em;
+          margin-right: .4em;
+          vertical-align: -.1em;
+          border-radius: 2px;
+          background: var(--topic-color);
         }
       }
     }
