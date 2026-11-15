@@ -235,7 +235,8 @@ Each year's stylesheet `assets/style/theme-YEAR.scss` in the site:
 and the site's `i18n/en.toml` names its charter and history pages
 (`footer_charter`, `footer_history`).
 
-- **Updating:** `hugo mod get -u github.com/IAQI/conference-theme`, then commit
+- **Updating:** `go get github.com/IAQI/conference-theme@<commit>` (`hugo mod
+  get -u` fails while the module's own `go.mod` differs), then commit
   `go.mod` and `go.sum`. A site only changes when its pin is updated.
 - **Local work on the module:** to preview changes to the module itself in a
   site, run
