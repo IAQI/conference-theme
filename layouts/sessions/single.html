@@ -47,6 +47,7 @@ RelPermalink: {{ .RelPermalink }}
 		{{ if not (hasPrefix .File.TranslationBaseName "__") }}
 			{{/* when is this session running? It may appear several times. */}}
 			{{ $days := slice }}
+			{{ $locations := slice }}
 			{{ $schedule := index site.Data (printf "schedule-%s" $currentYear) | default slice }}
 			{{ range $day := $schedule }}
 				{{ $ranges := slice }}
@@ -59,6 +60,9 @@ RelPermalink: {{ .RelPermalink }}
 						{{ end }}
 					{{ end }}
 					{{ if eq $slot.session $key }}
+						{{ with $slot.location }}
+							{{ if reflect.IsSlice . }}{{ $locations = $locations | append . }}{{ else }}{{ $locations = $locations | append (slice .) }}{{ end }}
+						{{ end }}
 						{{ if $slot.end }}
 							{{ $ranges = $ranges | append (printf "%s - %s" $slot.time $slot.end) }}
 						{{ else }}
@@ -73,6 +77,10 @@ RelPermalink: {{ .RelPermalink }}
 			{{ end }}
 			{{ with $days }}
 				<div class="time">{{ delimit . "; " }}</div>
+				{{/* where: the room(s) of its slots, each once */}}
+				{{ with $locations | uniq }}
+				<div class="room">{{ partial "program/session-locations.html" (dict "location" . "year" $currentYear) }}</div>
+				{{ end }}
 			{{ else }}
 				{{ warnf "session %q is not in schedule-%s" $key $currentYear }}
 			{{ end }}

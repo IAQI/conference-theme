@@ -22,6 +22,25 @@
     content: 'Time : ';
   }
 
+  /* the room(s), from the schedule: "Room : Label, description" */
+  .room {
+    &::before {
+      content: 'Room : ';
+    }
+
+    .location, .location-label, .location-description {
+      display: inline;
+    }
+
+    .location-description::before {
+      content: ', ';
+    }
+
+    .location + .location::before {
+      content: '; ';
+    }
+  }
+
   .paper-list {
     line-height: 1.5rem;
   }
