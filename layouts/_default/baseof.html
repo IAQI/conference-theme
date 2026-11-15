@@ -47,14 +47,15 @@
 
 <main>
   {{ block "banner" . }}
-    {{/* The variable $currentYear is local, so we have to retrieve it in this block again, despite the code above */}}
+    {{/* The variable $currentYear is local, so we have to retrieve it in this block again, despite the code above.
+         Pages outside a year (tags, ...) use the current year's banner; without one, the IAQI stand-in is shown. */}}
     {{ $currentYear := string .Site.Params.currentYear }}
-    {{ if not (eq .Section "") }}
+    {{ if and (ne .Section "") (isset .Site.Params .Section) }}
       {{ $currentYear = .Section }}
     {{ end }}
 
     <div class="banner">
-      {{ $logoPath := (index .Site.Params $currentYear).logos.banner }}
+      {{ $logoPath := (index .Site.Params $currentYear).logos.banner | default "/images/placeholder/banner.svg" }}
       <img id="banner-img" src="{{ $logoPath }}" alt="logo {{ .Site.Title }} ">
     </div>
   {{ end }}

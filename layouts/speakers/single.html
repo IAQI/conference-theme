@@ -24,7 +24,7 @@
 <div class="hero">
 
 	<header>
-		<div class="speaker-img" style="background-image: url({{  .Params.photoURL }});"></div>
+		<div class="speaker-img" style="background-image: url({{ .Params.photoURL | default "/images/placeholder/person.svg" }});"></div>
 		<div>
 			<h1>{{ .Page.Params.name }}</h1>
 

@@ -1,7 +1,7 @@
 {{ define "main" }}
 
 <section class="header">
-	<div class="card" style="background-image: url({{ .Params.logo }});"></div>
+	<div class="card" style="background-image: url({{ .Params.logo | default "/images/placeholder/sponsor.svg" }});"></div>
 	<h1>{{ .Title }}</h1>
 	{{ if .Params.website }}
 	{{ if not (hasPrefix .Params.website "/") }}

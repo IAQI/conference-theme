@@ -7,7 +7,10 @@
      but the header shows whatever the year defines. Parents with children
      are not links; a parent is marked active when one of its children is
      the current page. Once content/YEAR/schedule/ is published, it is also
-     listed first under the parent with identifier "program". */}}
+     listed first under the parent with identifier "program".
+
+     The logo is [params.YEAR.logos] header; pages outside a year (tags, ...)
+     use the current year's, and without one the IAQI stand-in is shown. */}}
 <header>
 	{{ $currentPage := . }}
 	{{ $currentYear := string .Site.Params.currentYear }}
@@ -20,7 +23,7 @@
 	  <div class="logo">
 			{{ $logoPath := "" }}
 			{{ if $currentYear }}
-				{{ $logoPath = (index .Site.Params $currentYear).logos.header }}
+				{{ $logoPath = (index .Site.Params (cond (isset .Site.Params $currentYear) $currentYear (string .Site.Params.currentYear))).logos.header | default "/images/placeholder/header-logo.svg" }}
 			{{ else }}
 				{{ warnf "currentYear not defined: %s" $currentYear }}
 			{{ end }}

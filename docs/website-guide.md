@@ -182,7 +182,8 @@ Use strong colours that are easy to tell apart (the TQC file uses eight).
 ## A new year
 
 1. **Design:** a logo, a background image for the home page, a banner for the
-   other pages (put them in `static/images/<year>/`) and a main colour.
+   other pages (put them in `static/images/<year>/`) and a main colour. Until
+   they exist, the year uses the IAQI stand-ins (below).
 2. **Start the year from the previous one:**
    ```sh
    python3 ../conference-theme/scripts/new_year.py --year 2028
@@ -194,11 +195,35 @@ Use strong colours that are easy to tell apart (the TQC file uses eight).
    parameters, `<year>@` e-mail addresses and page links to the new year, copies
    `[params.<year>]`, the menus and `theme-<year>.scss` next to the previous
    year's, and prints a checklist. Dates and texts like "QCrypt 2027" are left
-   for you; images and PDFs keep pointing to the previous year until replaced.
+   for you; other images and PDFs keep pointing to the previous year until
+   replaced. The new year's logos, home page photo and colour are the
+   stand-ins below, so nothing of the previous year's design shows up.
 3. **Fill in** `[params.<year>]` in `hugo.toml`: `city`, `timeanddate_cityid`
    (from https://www.timeanddate.com/worldclock/personal.html, "Share This
    Personal World Clock"), `themeColor` (same as `--primary`) and the logos.
 4. **Colours** in `assets/style/theme-<year>.scss`.
+
+### Stand-in images
+
+The theme ships IAQI-branded stand-ins in `static/images/placeholder/`, made in
+[IAQI/iaqi-brand](https://github.com/IAQI/iaqi-brand#stand-ins-for-conference-websites).
+Each one says what to deliver in its place:
+
+| stand-in | set in | deliver |
+|---|---|---|
+| `/images/placeholder/background.svg` | `jumbo img=` on the home page | 1920×960 px JPEG, at most 500 KB, subject in the centre (cropped and darkened) |
+| `/images/placeholder/logo.svg` | `jumbo logo=` on the home page | SVG, or transparent PNG at least 800 px wide (shown 400 px wide on the photo) |
+| `/images/placeholder/header-logo.svg` | `[params.<year>.logos] header` | SVG, or transparent PNG at least 96 px tall (shown 48 px tall, at most 180 px wide) |
+| `/images/placeholder/banner.svg` | `[params.<year>.logos] banner` | 2000×800 px JPEG (shown 300 px high, cropped around the centre) |
+| `/images/placeholder/person.svg` | `photoURL` of a team member or speaker | square JPEG, at least 400×400 px, face in the centre |
+| `/images/placeholder/sponsor.svg` | `logo` of a sponsor | SVG, or transparent PNG at least 600 px wide |
+
+`new_year.py` sets the first four; the theme also falls back to the header
+logo, banner, person and sponsor stand-ins when that field is empty. To
+replace one, put the real file in `static/images/<year>/` and change the path.
+The new year's colour starts as IAQI maroon `#660038` (`--primary` and
+`themeColor`). Building the site warns when the current year
+(`params.currentYear`) still shows a stand-in.
 5. **Pages:** update each page in `content/<year>/` and set `draft: false`
    when it is ready. Leave `currentYear` in `hugo.toml` unchanged until then.
 6. **Promote the year** once the new site is ready: in `hugo.toml` change

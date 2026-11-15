@@ -94,7 +94,7 @@
 	<ul class="speakers">
 		{{ range partial "program/speakers.html" (dict "keys" $page.Params.speakers "year" $year) }}
 		<li class="speaker">
-			<div class="speaker-img" style="background-image: url({{ .Params.photoURL }});"></div>
+			<div class="speaker-img" style="background-image: url({{ .Params.photoURL | default "/images/placeholder/person.svg" }});"></div>
 			<em class="speaker-name">{{ .Params.name }}</em>
 		</li>
 		{{ end }}
