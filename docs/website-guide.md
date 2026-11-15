@@ -160,6 +160,25 @@ A site sets its own colours in `theme-<year>.scss`, e.g.
 when that page has something to show (papers, speakers, text, slides or a
 video); sessions in parallel are shown side by side with centred titles.
 
+**Topic colours (optional).** To colour contributed sessions by topic area,
+add `data/topics-<year>.yml`. Each area has a key, a name, a colour and the
+session titles that belong to it; a session page can also name its area with
+`topic: <key>`. Cards in an area get a strip in its colour on the left, and a
+legend of the areas appears above the schedule. Example (TQC 2026):
+
+```yaml
+- key: algorithms
+  name: Algorithms
+  color: "#e6194b"
+  sessions: [Algorithms, Optimization]
+- key: cryptography
+  name: Cryptography
+  color: "#4363d8"
+  sessions: [Cryptography, Random Unitaries]
+```
+
+Use strong colours that are easy to tell apart (the TQC file uses eight).
+
 ## A new year
 
 1. **Design:** a logo, a background image for the home page, a banner for the
