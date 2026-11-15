@@ -188,9 +188,13 @@ Use strong colours that are easy to tell apart (the TQC file uses eight).
    python3 ../conference-theme/scripts/new_year.py --year 2028
    ```
    It copies the previous year's general pages (home, call, registration,
-   charter, history, code of conduct and the section pages, but no talks,
-   speakers, committee members or sponsors), sets them to `draft: true`, copies
-   `[params.<year>]`, the menus and `theme-<year>.scss`, and prints a checklist.
+   charter, history, code of conduct, the pages in folders like `attend/` and
+   `technical/` and the section pages, but no talks, speakers, committee
+   members or sponsors), sets them to `draft: true`, moves `year=` shortcode
+   parameters, `<year>@` e-mail addresses and page links to the new year, copies
+   `[params.<year>]`, the menus and `theme-<year>.scss` next to the previous
+   year's, and prints a checklist. Dates and texts like "QCrypt 2027" are left
+   for you; images and PDFs keep pointing to the previous year until replaced.
 3. **Fill in** `[params.<year>]` in `hugo.toml`: `city`, `timeanddate_cityid`
    (from https://www.timeanddate.com/worldclock/personal.html, "Share This
    Personal World Clock"), `themeColor` (same as `--primary`) and the logos.
