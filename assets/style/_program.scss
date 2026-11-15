@@ -66,16 +66,14 @@ html {
     }
   }
 
-  .paper-list.single-paper {
-    list-style: none;
-    padding-left: var(--space-4, 1rem);
-    margin-top: .5rem;
-  }
-
-  .paper-simple em.presenter {
+  // The person giving a talk is set in italics, in every kind of card:
+  // papers (also merged ones) and invited or tutorial speakers. Not bold,
+  // since bold is used for paper titles in multi-paper cards.
+  .presenter,
+  .speaker-name {
     font-style: italic;
-    text-decoration: underline;
-    text-underline-offset: 2px;
+    font-weight: normal;
+    text-decoration: none;
   }
 
   .chair {
