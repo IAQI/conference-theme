@@ -187,5 +187,93 @@ class SanitizeTest(unittest.TestCase):
         self.assertEqual(out[0]["options"]["talk-type"], "talk")
 
 
+HUGO_TOML = """[params]
+    currentYear = 2026
+
+[params.2026]
+  city = "Ottawa"
+  [params.2026.logos]
+    jumbo = "/images/2026/logo.png"
+    banner = "/images/2026/missing.jpg"
+
+[params.logos]
+    footer = "/images/netlify.svg"
+
+[menu]
+  [[menu.2026]]
+    name = "Home"
+    pageRef = '/2026'
+  [[menu.2026]]
+    name = "Sponsors"
+    pageRef = "/2026/partners"
+
+[languages]
+"""
+
+PAGES = {
+    "_index.md": '---\ntitle: Home\nyear: 2026\n---\n'
+                 '{{% jumbo img="/images/2026/logo.png" %}}\n'
+                 '{{% partners categories="gold" year=2026 %}}\n'
+                 '[history](/2026/history) and [old banner](/images/2026/missing.jpg)\n',
+    "code-of-conduct.md": '---\naliases:\n  - /2026/attend/code-of-conduct/\ntitle: CoC\nyear: 2026\n---\n',
+    "attend/registration.md": '---\ntitle: Registration\nyear: 2026\ndraft: false\nmenu:\n    2026:\n'
+                              '        parent: attend\n---\n'
+                              'Write to 2026@qcrypt.net or pcchairs2026@qcrypt.net in August 2026.\n',
+    "speakers/_index.md": '---\ntitle: Speakers\nyear: 2026\n---\n{{< speakers types="invited" year="2026" >}}\n',
+    "speakers/invited/Goldin.md": '---\ntitle: Goldin\n---\n',
+    "team/org/Alice.md": '---\ntitle: Alice\n---\n',
+    "team/_index.md": '---\ntitle: Team\n---\n',
+}
+
+
+class NewYearTest(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.root = Path(self.tmp.name)
+        for rel, text in PAGES.items():
+            page = self.root / "content" / "2026" / rel
+            page.parent.mkdir(parents=True, exist_ok=True)
+            page.write_text(text)
+        (self.root / "static/images/2026").mkdir(parents=True)
+        (self.root / "static/images/2026/logo.png").write_bytes(b"png")
+        (self.root / "hugo.toml").write_text(HUGO_TOML)
+        (self.root / "data").mkdir()
+        run("new_year.py", "--year", "2027", cwd=self.root)
+        self.new = self.root / "content" / "2027"
+
+    def test_pages_copied(self):
+        copied = sorted(str(p.relative_to(self.new)) for p in self.new.rglob("*.md"))
+        # plain folders (attend/) are copied, pages inside sections (speakers/, team/) are not
+        self.assertEqual(copied, ["_index.md", "attend/registration.md", "code-of-conduct.md",
+                                  "speakers/_index.md", "team/_index.md"])
+
+    def test_page_contents(self):
+        home = (self.new / "_index.md").read_text()
+        self.assertIn("year: 2027", home)
+        self.assertIn("draft: true", home)
+        self.assertIn('year=2027 %}}', home)
+        self.assertIn('img="/images/2026/logo.png"', home)     # existing file: kept
+        self.assertIn("(/2027/history)", home)                 # page link: moved
+        self.assertIn("(/images/2027/missing.jpg)", home)      # no such file: moved
+        self.assertIn('year="2027"', (self.new / "speakers/_index.md").read_text())
+        reg = (self.new / "attend/registration.md").read_text()
+        self.assertIn("2027@qcrypt.net or pcchairs2027@qcrypt.net in August 2026.", reg)
+        self.assertIn("    2027:\n        parent: attend", reg)
+        self.assertIn("draft: true", reg)
+        self.assertIn("- /2027/attend/code-of-conduct/", (self.new / "code-of-conduct.md").read_text())
+
+    def test_config_blocks_next_to_old_year(self):
+        cfg = (self.root / "hugo.toml").read_text()
+        self.assertIn("currentYear = 2026", cfg)
+        self.assertLess(cfg.index("[params.2027]"), cfg.index("[params.logos]"))
+        self.assertLess(cfg.index("[params.2026.logos]"), cfg.index("[params.2027]"))
+        self.assertIn('jumbo = "/images/2026/logo.png"', cfg.split("[params.2027]")[1])
+        self.assertLess(cfg.rindex("[[menu.2026]]"), cfg.index("[[menu.2027]]"))
+        self.assertLess(cfg.index("[[menu.2027]]"), cfg.index("[languages]"))
+        self.assertIn("pageRef = '/2027'", cfg)
+        self.assertIn('pageRef = "/2027/partners"', cfg)
+
+
 if __name__ == "__main__":
     unittest.main()
