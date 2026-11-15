@@ -77,9 +77,13 @@ RelPermalink: {{ .RelPermalink }}
 			{{ end }}
 			{{ with $days }}
 				<div class="time">{{ delimit . "; " }}</div>
-				{{/* where: the room(s) of its slots, each once */}}
+				{{/* where: the room(s) of its slots, each once; no line when no
+				     room has a name (no location, an unknown key, or an empty label) */}}
 				{{ with $locations | uniq }}
-				<div class="room">{{ partial "program/session-locations.html" (dict "location" . "year" $currentYear) }}</div>
+					{{ $rooms := partial "program/session-locations.html" (dict "location" . "year" $currentYear) }}
+					{{ with strings.TrimSpace (string $rooms) }}
+				<div class="room">{{ . | safeHTML }}</div>
+					{{ end }}
 				{{ end }}
 			{{ else }}
 				{{ warnf "session %q is not in schedule-%s" $key $currentYear }}
