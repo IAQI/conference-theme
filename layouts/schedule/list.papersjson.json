@@ -1,0 +1,38 @@
+{{- /* /YEAR/schedule/papers.json: accepted papers (talks) and posters as data,
+     each talk with the session(s) where it is presented. Switched on like
+     program.json (see list.programjson.json). */ -}}
+{{- $year := partial "program/year.html" . -}}
+{{- $event := partial "program/event.html" $year -}}
+
+{{- /* paper id -> sessions presenting it */ -}}
+{{- $where := dict -}}
+{{- range $day := partial "program/schedule-records.html" (dict "year" $year "tz" $event.timezone) -}}
+	{{- range $s := $day.sessions -}}
+		{{- range $paper := $s.papers | default slice -}}
+			{{- $ids := slice $paper.pid | append ($paper.mergedWith | default slice) -}}
+			{{- range $ids -}}
+				{{- $k := printf "%d" (int .) -}}
+				{{- $entry := dict "title" $s.title "url" $s.url "start" $s.start -}}
+				{{- with $s.end }}{{ $entry = merge $entry (dict "end" .) }}{{ end -}}
+				{{- with $s.rooms }}{{ $entry = merge $entry (dict "rooms" .) }}{{ end -}}
+				{{- $where = merge $where (dict $k ((index $where $k | default slice) | append $entry)) -}}
+			{{- end -}}
+		{{- end -}}
+	{{- end -}}
+{{- end -}}
+
+{{- $talks := slice -}}
+{{- range index site.Data (printf "accepted-papers-%s" $year) | default slice -}}
+	{{- $r := partial "program/paper-record.html" (dict "paper" . "year" $year) -}}
+	{{- with index $where (printf "%d" (int .pid)) }}{{ $r = merge $r (dict "sessions" .) }}{{ end -}}
+	{{- $talks = $talks | append $r -}}
+{{- end -}}
+{{- $posters := slice -}}
+{{- range index site.Data (printf "posters-%s" $year) | default slice -}}
+	{{- $posters = $posters | append (partial "program/paper-record.html" (dict "paper" . "year" $year)) -}}
+{{- end -}}
+
+{{- $out := dict "conference" (partial "program/event-public.html" $year) "talks" $talks "posters" $posters -}}
+{{- with site.GetPage (printf "/%s/technical/accepted-papers" $year) }}{{ $out = merge $out (dict "acceptedPapersPage" .Permalink) }}{{ end -}}
+{{- with .OutputFormats.Get "programjson" }}{{ $out = merge $out (dict "program" .Permalink) }}{{ end -}}
+{{- $out | jsonify (dict "indent" "  ") -}}

@@ -1,0 +1,45 @@
+{{- /* /YEAR/schedule/program.ics: the schedule as a calendar. One event per
+     schedule slot; times in UTC when the conference time zone is set
+     ([params.YEAR.event] timezone), otherwise in local ("floating") time.
+     Switched on like program.json (see list.programjson.json). */ -}}
+{{- $year := partial "program/year.html" . -}}
+{{- $event := partial "program/event.html" $year -}}
+{{- $tz := $event.timezone -}}
+{{- $host := (urls.Parse site.BaseURL).Host | default "localhost" -}}
+{{- $stamp := now.UTC.Format "20060102T150405Z" -}}
+{{- $lines := slice "BEGIN:VCALENDAR" "VERSION:2.0" (printf "PRODID:-//%s//conference-theme//EN" $host) "CALSCALE:GREGORIAN" "METHOD:PUBLISH" -}}
+{{- $lines = $lines | append (partial "program/ics-line.html" (dict "name" "X-WR-CALNAME" "value" $event.name)) -}}
+{{- with $tz }}{{ $lines = $lines | append (printf "X-WR-TIMEZONE:%s" .) }}{{ end -}}
+{{- $slots := index site.Data (printf "schedule-%s" $year) | default slice -}}
+{{- range $day := $slots -}}
+	{{- range $slot := $day.sessions -}}
+		{{- with site.GetPage (printf "/%s/sessions/%s" $year $slot.session) -}}
+			{{- $s := partial "program/session-record.html" (dict "page" . "slot" $slot "day" $day.day "year" $year "tz" $tz) -}}
+			{{- $start := partial "program/datetime.html" (dict "date" $day.day "time" $slot.time "tz" $tz "ics" true) -}}
+			{{- $lines = $lines | append "BEGIN:VEVENT"
+				(printf "UID:%s-%s-%s@%s" $year (anchorize $slot.session) $start $host)
+				(printf "DTSTAMP:%s" $stamp)
+				(printf "DTSTART:%s" $start) -}}
+			{{- with $slot.end -}}
+				{{- $lines = $lines | append (printf "DTEND:%s" (partial "program/datetime.html" (dict "date" $day.day "time" . "tz" $tz "ics" true))) -}}
+			{{- end -}}
+			{{- $lines = $lines | append (partial "program/ics-line.html" (dict "name" "SUMMARY" "value" $s.title)) -}}
+			{{- $where := $s.rooms | default slice -}}
+			{{- /* rooms usually name the building already: add the address for maps */ -}}
+			{{- with $event.address | default (cond (gt (len $where) 0) "" ($event.venue | default "")) }}{{ $where = $where | append . }}{{ end -}}
+			{{- with $where }}{{ $lines = $lines | append (partial "program/ics-line.html" (dict "name" "LOCATION" "value" (delimit . ", "))) }}{{ end -}}
+			{{- $desc := slice -}}
+			{{- with $s.chair }}{{ $desc = $desc | append (printf "Chair: %s" .) }}{{ end -}}
+			{{- with $s.speakers }}{{ $desc = $desc | append (printf "Speakers: %s" (delimit . ", ")) }}{{ end -}}
+			{{- range $s.papers | default slice -}}
+				{{- $names := slice }}{{ range .authors }}{{ $names = $names | append .name }}{{ end -}}
+				{{- $desc = $desc | append (printf "- %s (%s)" .title (delimit $names ", ")) -}}
+			{{- end -}}
+			{{- $desc = $desc | append $s.url -}}
+			{{- $lines = $lines | append (partial "program/ics-line.html" (dict "name" "DESCRIPTION" "value" (delimit $desc "\n"))) -}}
+			{{- $lines = $lines | append (partial "program/ics-line.html" (dict "name" "URL" "value" $s.url "raw" true)) "END:VEVENT" -}}
+		{{- end -}}
+	{{- end -}}
+{{- end -}}
+{{- $lines = $lines | append "END:VCALENDAR" -}}
+{{- delimit $lines "\r\n" -}}{{- "\r\n" -}}

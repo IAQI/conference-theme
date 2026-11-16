@@ -1,0 +1,8 @@
+# {{ site.Title }}
+# Everyone is welcome to read and index this site: search engines, AI
+# assistants fetching pages for their users, and AI crawlers.
+# A summary for AI agents: {{ "llms.txt" | absURL }}
+User-agent: *
+Allow: /
+
+Sitemap: {{ "sitemap.xml" | absURL }}

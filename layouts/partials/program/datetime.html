@@ -1,0 +1,28 @@
+{{/* Returns a schedule date and time as a string. Expects dict
+       date  "2026-08-24"
+       time  "09:15" (optional; without it, only the date is returned)
+       tz    IANA time zone, e.g. "America/Toronto" (optional)
+       ics   true for iCalendar format: UTC ("20260824T131500Z") with a time
+             zone, local "floating" time ("20260824T091500") without
+     Otherwise ISO 8601, with the UTC offset when the time zone is known
+     ("2026-08-24T09:15:00-04:00"). */}}
+{{ $date := string .date }}
+{{ $out := $date }}
+{{ with .time }}
+	{{ $local := printf "%sT%s:00" $date (string .) }}
+	{{ if $.tz }}
+		{{ $t := time.AsTime $local $.tz }}
+		{{ if $.ics }}
+			{{ $out = $t.UTC.Format "20060102T150405Z" }}
+		{{ else }}
+			{{ $out = $t.Format "2006-01-02T15:04:05-07:00" }}
+		{{ end }}
+	{{ else if $.ics }}
+		{{ $out = (time.AsTime $local).Format "20060102T150405" }}
+	{{ else }}
+		{{ $out = $local }}
+	{{ end }}
+{{ else }}
+	{{ if $.ics }}{{ $out = replace $date "-" "" }}{{ end }}
+{{ end }}
+{{ return $out }}

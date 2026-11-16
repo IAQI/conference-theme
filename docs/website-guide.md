@@ -32,7 +32,7 @@ to the site and run
 | `data/` | accepted papers, posters, schedule, rooms, presenters, videos (`<kind>-<year>.json/.yml`), the footer (`footer.yml`) and the schedule categories (`categories.yml`) |
 | `static/images/<year>/` | logos, banner and background of that year |
 | `assets/style/theme-<year>.scss` | that year's colours (see [Colours and styles](#colours-and-styles)) |
-| `hugo.toml` | site settings, `[params.<year>]` (city, logos, colour) and the menus per year |
+| `hugo.toml` | site settings, `[params.<year>]` (city, logos, colour, `event` facts for agents) and the menus per year |
 | `netlify.toml` | build settings and redirects (`/` to the current year, older years to the archive) |
 | `layouts/`, `assets/`, `i18n/` | only files that replace the module's version for this site |
 
@@ -201,6 +201,8 @@ Use strong colours that are easy to tell apart (the TQC file uses eight).
 3. **Fill in** `[params.<year>]` in `hugo.toml`: `city`, `timeanddate_cityid`
    (from https://www.timeanddate.com/worldclock/personal.html, "Share This
    Personal World Clock"), `themeColor` (same as `--primary`) and the logos.
+   Once dates and venue are fixed, add `[params.<year>.event]` (next section);
+   `new_year.py` does not copy it.
 4. **Colours** in `assets/style/theme-<year>.scss`.
 5. **Pages:** update each page in `content/<year>/` and set `draft: false`
    when it is ready. Leave `currentYear` in `hugo.toml` unchanged until then.
@@ -215,6 +217,73 @@ Use strong colours that are easy to tell apart (the TQC file uses eight).
 
 During the year: update the call, registration and venue pages as news comes
 in, and add a line to the "website updates" table on the home page each time.
+
+## Information for AI agents
+
+People increasingly ask assistants (ChatGPT, Claude, Perplexity, ...) "when
+and where is QCrypt?", "what is the submission deadline?" or "when is X's
+talk?". The assistants read the site, so the theme also publishes the key facts
+in forms they read reliably:
+
+- **`/llms.txt`** ([llmstxt.org](https://llmstxt.org)): what the conference
+  is, the current edition's dates, place and contact, the pages of the year's
+  menu (with each page's `description:` front matter, if set), the program data
+  and the other editions. `/llms-full.txt` adds the text of the year's pages.
+- **JSON-LD** (schema.org) in the head of the home pages (the conference as an
+  `Event`) and of session pages (time, room, speakers, papers).
+- **`/YEAR/schedule/program.json`, `papers.json` and `program.ics`**: the
+  program as data and as a calendar, linked from the schedule page.
+- **`/robots.txt`** allows everyone, AI crawlers included.
+
+What a site provides:
+
+```toml
+# hugo.toml, above the first [table] (below one, they are ignored):
+enableRobotsTXT = true
+
+[outputs]
+  home = ["html", "rss", "llms", "llmsfull"]
+
+[params]
+  archiveUrl = "https://qcrypt.iaqi.org"   # optional: earlier editions
+
+[params.2026]
+  city = "Ottawa, Canada"
+  [params.2026.event]                       # every key optional
+    name = "QCrypt 2026"
+    startDate = "2026-08-24"
+    endDate = "2026-08-28"
+    timezone = "America/Toronto"            # IANA name; the schedule's times are local
+    venue = "Learning Crossroads (CRX), University of Ottawa"
+    address = "100 Louis-Pasteur Private, Ottawa, ON K1N 9N3, Canada"
+    attendanceMode = "offline"              # offline, online or mixed
+    status = "scheduled"                    # or postponed, cancelled, movedOnline
+    registrationUrl = "/2026/attend/registration"
+    [[params.2026.event.deadlines]]         # one block per deadline
+      label = "Submission"
+      date = "2026-04-10"
+    [[params.2026.event.deadlines]]
+      label = "Notification"
+      date = "2026-06-01"
+```
+
+and in `content/<year>/schedule/_index.md`, once the schedule exists:
+
+```yaml
+outputs: [html, rss, programjson, papersjson, programics]
+```
+
+Only enter facts the organizers have announced; leave keys out otherwise. The
+conference's JSON-LD appears only once `startDate` is set. Without `timezone`,
+times are given without UTC offset (and as "floating" local time in the
+calendar). Good habits in the content help too: write dates with the year,
+state the time zone of the schedule, and give the main pages (call,
+registration, schedule) a one-line `description:` in their front matter. It is
+used for the page's meta description and in `/llms.txt`.
+
+Check after a build: `public/llms.txt`, `public/robots.txt`,
+`public/<year>/schedule/program.json`, and the JSON-LD of a page with
+https://validator.schema.org/ (paste the HTML).
 
 ### Stand-in images
 

@@ -1,0 +1,8 @@
+{{/* Returns a menu entry as a Markdown list item text for llms.txt:
+     "[Name](absolute URL): page description", or just the name for entries
+     without a page (submenu headings). */}}
+{{ $entry := . }}
+{{ $out := $entry.Name }}
+{{ with $entry.URL }}{{ $out = printf "[%s](%s)" $entry.Name (absURL .) }}{{ end }}
+{{ with $entry.Page }}{{ with .Description }}{{ $out = printf "%s: %s" $out . }}{{ end }}{{ end }}
+{{ return $out }}

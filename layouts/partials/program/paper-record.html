@@ -1,0 +1,34 @@
+{{/* Returns an accepted paper as plain data, for the JSON exports and JSON-LD.
+     Expects dict "paper" (the record of data/accepted-papers-YEAR.json or
+     posters-YEAR.json) and "year".
+
+     Returns dict: pid, title, authors (list of {name, affiliation?}),
+     presenters (names, from data/presenters-YEAR.yml), abstract, arxiv (ids),
+     video (YouTube URL), mergedWith (paper ids). Empty fields are left out. */}}
+{{ $paper := .paper }}
+{{ $year := string .year }}
+{{ $out := dict "pid" (int $paper.pid) "title" $paper.title }}
+{{ $authors := slice }}
+{{ range $paper.authors }}
+	{{ $a := dict "name" (trim (printf "%s %s" (.first | default "") (.last | default "")) " ") }}
+	{{ with .affiliation }}{{ $a = merge $a (dict "affiliation" .) }}{{ end }}
+	{{ $authors = $authors | append $a }}
+{{ end }}
+{{ $out = merge $out (dict "authors" $authors) }}
+{{ $byYear := index site.Data (printf "presenters-%s" $year) | default dict }}
+{{ with index $byYear (printf "%d" (int $paper.pid)) }}{{ $out = merge $out (dict "presenters" .) }}{{ end }}
+{{ with $paper.abstract }}{{ $out = merge $out (dict "abstract" (trim . " \n")) }}{{ end }}
+{{ with index ($paper.options | default dict) "arxiv-id" }}
+	{{ $ids := . }}
+	{{ if not (reflect.IsSlice $ids) }}{{ $ids = slice $ids }}{{ end }}
+	{{ $out = merge $out (dict "arxiv" $ids) }}
+{{ end }}
+{{ with (partial "program/video.html" (dict "year" $year "pid" $paper.pid)).id }}
+	{{ $out = merge $out (dict "video" (printf "https://youtu.be/%s" .)) }}
+{{ end }}
+{{ with $paper.mergedwith }}
+	{{ $ids := . }}
+	{{ if not (reflect.IsSlice $ids) }}{{ $ids = slice $ids }}{{ end }}
+	{{ $out = merge $out (dict "mergedWith" $ids) }}
+{{ end }}
+{{ return $out }}

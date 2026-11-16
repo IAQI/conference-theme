@@ -1,0 +1,18 @@
+{{/* Returns data/schedule-YEAR.yml as plain data: a list of
+     {date, sessions: [session-record.html ...]}. Expects dict "year" and
+     "tz" (IANA time zone, optional). Slots without a session page are skipped
+     (the schedule page warns about them). */}}
+{{ $year := string .year }}
+{{ $tz := .tz }}
+{{ $schedule := index site.Data (printf "schedule-%s" $year) | default slice }}
+{{ $days := slice }}
+{{ range $day := $schedule }}
+	{{ $sessions := slice }}
+	{{ range $slot := $day.sessions }}
+		{{ with site.GetPage (printf "/%s/sessions/%s" $year $slot.session) }}
+			{{ $sessions = $sessions | append (partial "program/session-record.html" (dict "page" . "slot" $slot "day" $day.day "year" $year "tz" $tz)) }}
+		{{ end }}
+	{{ end }}
+	{{ $days = $days | append (dict "date" $day.day "sessions" $sessions) }}
+{{ end }}
+{{ return $days }}

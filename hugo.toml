@@ -5,3 +5,43 @@
   [module.hugoVersion]
     extended = true
     min = "0.140.0"
+
+# Machine-readable outputs for AI agents and other programs (docs/website-guide.md,
+# "Information for AI agents"):
+#   /llms.txt, /llms-full.txt          site overview for agents (home page)
+#   /YEAR/schedule/program.json        the schedule with talks and papers
+#   /YEAR/schedule/papers.json         accepted papers and posters
+#   /YEAR/schedule/program.ics         the schedule as a calendar
+# Sites switch them on themselves (Hugo does not merge [outputs] from modules):
+#   hugo.toml:  [outputs] home = ["html", "rss", "llms", "llmsfull"]
+#   content/YEAR/schedule/_index.md front matter:
+#               outputs: [html, rss, programjson, papersjson, programics]
+[mediaTypes]
+  [mediaTypes."text/calendar"]
+    suffixes = ["ics"]
+
+[outputFormats]
+  [outputFormats.llms]
+    mediaType = "text/plain"
+    baseName = "llms"
+    isPlainText = true
+    notAlternative = true
+    permalinkable = false
+  [outputFormats.llmsfull]
+    mediaType = "text/plain"
+    baseName = "llms-full"
+    isPlainText = true
+    notAlternative = true
+    permalinkable = false
+  [outputFormats.programjson]
+    mediaType = "application/json"
+    baseName = "program"
+    isPlainText = true
+  [outputFormats.papersjson]
+    mediaType = "application/json"
+    baseName = "papers"
+    isPlainText = true
+  [outputFormats.programics]
+    mediaType = "text/calendar"
+    baseName = "program"
+    isPlainText = true

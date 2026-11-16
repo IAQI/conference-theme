@@ -1,0 +1,87 @@
+{{/* schema.org JSON-LD for search engines and AI agents.
+
+     - The home page and each year's home page: the conference as an Event,
+       when [params.YEAR.event] has a startDate (see program/event.html).
+     - Session pages: each scheduled slot as an Event (time, room, speakers,
+       chair) with its papers as ScholarlyArticle, part of the conference.
+     Nothing is emitted when the data is missing. */}}
+{{ $year := partial "program/year.html" . }}
+{{ $e := partial "program/event.html" $year }}
+{{ $status := index (dict "scheduled" "EventScheduled" "postponed" "EventPostponed" "cancelled" "EventCancelled" "rescheduled" "EventRescheduled" "movedonline" "EventMovedOnline") (lower ($e.status | default "scheduled")) | default "EventScheduled" }}
+{{ $mode := index (dict "offline" "OfflineEventAttendanceMode" "online" "OnlineEventAttendanceMode" "mixed" "MixedEventAttendanceMode") (lower ($e.attendanceMode | default "")) }}
+
+{{/* the venue as a schema.org Place */}}
+{{ $place := dict }}
+{{ with $e.venue | default $e.city }}
+	{{ $place = dict "@type" "Place" "name" . }}
+	{{ with $e.address | default $e.city }}{{ $place = merge $place (dict "address" .) }}{{ end }}
+{{ end }}
+
+{{ $isYearHome := or .IsHome (and .IsSection (eq .Section $year) (eq .CurrentSection.Parent site.Home)) }}
+{{ if and $isYearHome $e.known }}
+	{{ $ld := dict "@context" "https://schema.org" "@type" "Event" "name" $e.name
+		"startDate" $e.startDate "eventStatus" (printf "https://schema.org/%s" $status) }}
+	{{ with $e.endDate }}{{ $ld = merge $ld (dict "endDate" .) }}{{ end }}
+	{{ with $e.url }}{{ $ld = merge $ld (dict "url" .) }}{{ end }}
+	{{ with site.Params.description }}{{ $ld = merge $ld (dict "description" .) }}{{ end }}
+	{{ with $mode }}{{ $ld = merge $ld (dict "eventAttendanceMode" (printf "https://schema.org/%s" .)) }}{{ end }}
+	{{ $locations := slice }}
+	{{ with $place }}{{ $locations = $locations | append . }}{{ end }}
+	{{ if in (slice "online" "mixed") (lower ($e.attendanceMode | default "")) }}{{ $locations = $locations | append (dict "@type" "VirtualLocation" "url" $e.url) }}{{ end }}
+	{{ with $locations }}{{ $ld = merge $ld (dict "location" (cond (eq (len .) 1) (index . 0) .)) }}{{ end }}
+	{{ $logos := (index site.Params $year | default dict).logos | default dict }}
+	{{ with $logos.jumbo | default $logos.banner }}{{ $ld = merge $ld (dict "image" (absURL .)) }}{{ end }}
+	{{ with $e.registrationUrl }}{{ $ld = merge $ld (dict "offers" (dict "@type" "Offer" "url" .)) }}{{ end }}
+	{{ with site.Params.organizer }}{{ $ld = merge $ld (dict "organizer" (dict "@type" "Organization" "name" .name "url" .url)) }}{{ end }}
+	<script type="application/ld+json">{{ $ld | jsonify | safeJS }}</script>
+{{ end }}
+
+{{ if and .IsPage .File (strings.Contains .RelPermalink "/sessions/") }}
+	{{ $key := strings.TrimSuffix ".md" (strings.TrimPrefix (printf "%s/sessions/" $year) (replace .File.Path "\\" "/")) }}
+	{{ $page := . }}
+	{{ $events := slice }}
+	{{ range $day := index site.Data (printf "schedule-%s" $year) | default slice }}
+		{{ range $slot := $day.sessions }}
+			{{ if eq $slot.session $key }}
+				{{ $s := partial "program/session-record.html" (dict "page" $page "slot" $slot "day" $day.day "year" $year "tz" $e.timezone) }}
+				{{ $ld := dict "@type" "Event" "name" $s.title "url" $s.url "startDate" $s.start "eventStatus" (printf "https://schema.org/%s" $status) }}
+				{{ with $s.end }}{{ $ld = merge $ld (dict "endDate" .) }}{{ end }}
+				{{ with $mode }}{{ $ld = merge $ld (dict "eventAttendanceMode" (printf "https://schema.org/%s" .)) }}{{ end }}
+				{{/* the room(s), which usually name the building, or else the venue */}}
+				{{ $where := $s.rooms | default (slice) }}
+				{{ if not $where }}{{ with $e.venue }}{{ $where = slice . }}{{ end }}{{ end }}
+				{{ with $where }}
+					{{ $loc := dict "@type" "Place" "name" (delimit . "; ") }}
+					{{ with $e.address | default $e.city }}{{ $loc = merge $loc (dict "address" .) }}{{ end }}
+					{{ $ld = merge $ld (dict "location" $loc) }}
+				{{ end }}
+				{{ $super := dict "@type" "Event" "name" $e.name }}
+				{{ with $e.url }}{{ $super = merge $super (dict "url" .) }}{{ end }}
+				{{ $ld = merge $ld (dict "superEvent" $super) }}
+				{{ $people := slice }}
+				{{ range $s.speakers | default slice }}{{ $people = $people | append (dict "@type" "Person" "name" .) }}{{ end }}
+				{{ range $s.papers | default slice }}{{ range .presenters | default slice }}{{ $people = $people | append (dict "@type" "Person" "name" .) }}{{ end }}{{ end }}
+				{{ with $people }}{{ $ld = merge $ld (dict "performer" .) }}{{ end }}
+				{{ with $s.chair }}{{ $ld = merge $ld (dict "organizer" (dict "@type" "Person" "name" .)) }}{{ end }}
+				{{ $articles := slice }}
+				{{ range $s.papers | default slice }}
+					{{ $authors := slice }}
+					{{ range .authors }}
+						{{ $a := dict "@type" "Person" "name" .name }}
+						{{ with .affiliation }}{{ $a = merge $a (dict "affiliation" (dict "@type" "Organization" "name" .)) }}{{ end }}
+						{{ $authors = $authors | append $a }}
+					{{ end }}
+					{{ $art := dict "@type" "ScholarlyArticle" "name" .title "author" $authors }}
+					{{ with .abstract }}{{ $art = merge $art (dict "abstract" .) }}{{ end }}
+					{{ with .arxiv }}{{ $urls := slice }}{{ range . }}{{ $urls = $urls | append (printf "https://arxiv.org/abs/%s" .) }}{{ end }}{{ $art = merge $art (dict "sameAs" $urls) }}{{ end }}
+					{{ $articles = $articles | append $art }}
+				{{ end }}
+				{{ with $articles }}{{ $ld = merge $ld (dict "about" .) }}{{ end }}
+				{{ $events = $events | append $ld }}
+			{{ end }}
+		{{ end }}
+	{{ end }}
+	{{ with $events }}
+	<script type="application/ld+json">{{ dict "@context" "https://schema.org" "@graph" . | jsonify | safeJS }}</script>
+	{{ end }}
+{{ end }}

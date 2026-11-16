@@ -33,7 +33,8 @@ websites get from that:
 |---|---|
 | `layouts/` | all page layouts and shortcodes (home page blocks, team, partners, speakers, text pages, header, footer, ...) |
 | `layouts/schedule/list.html`, `layouts/sessions/single.html` | the schedule page (`type: schedule`) and a session page (`type: sessions`) |
-| `layouts/partials/schedule-session.html`, `paper*.html`, `location.html`, `program/*.html` | schedule cards, paper entries and their helpers (year, videos, slides, paper → session index, merged papers) |
+| `layouts/partials/schedule-session.html`, `paper*.html`, `location.html`, `program/*.html` | schedule cards, paper entries and their helpers (year, videos, slides, paper → session index, merged papers, edition facts, session/paper records for the exports) |
+| `layouts/partials/agents/`, `layouts/_default/home.llms*.txt`, `layouts/schedule/list.*.json`, `list.programics.ics`, `layouts/robots.txt` | information for AI agents: JSON-LD, `/llms.txt`, the program exports, robots.txt (see "Using the module in a site") |
 | `layouts/shortcodes/papers-accepted.html`, `posters-accepted.html`, `code-of-conduct.html`, `home-*.html`, ... | the shortcodes used in content pages |
 | `assets/style/_theme.scss` | the whole stylesheet; a site's `theme-YEAR.scss` starts with `@use "theme";` |
 | `assets/style/_program.scss`, `partials/`, `pages/` | the styles, by part of the site |
@@ -249,6 +250,20 @@ Optional site parameters (`[params]` in `hugo.toml`):
 |---|---|---|
 | `programFilePrefix` | `"QCrypt"` | prefix of older slide files `<prefix><YEAR>TalkSlides<NNN>…` |
 | `programScheduleSpeakers` | `true` | show speaker photos on schedule cards |
+| `archiveUrl` | none | where earlier editions are archived (e.g. `https://qcrypt.iaqi.org`), listed in `/llms.txt` |
+| `organizer` | none | `{name, url}` of the organizing body, in the conference's JSON-LD |
+| `[params.YEAR.event]` | none | facts of an edition for search engines and AI agents: `name, startDate, endDate, timezone, venue, address, attendanceMode, status, registrationUrl` and `[[params.YEAR.event.deadlines]]` blocks `{label, date}`. See the guide, "Information for AI agents" |
+
+Outputs for AI agents and other programs (output formats defined in this
+module's `hugo.toml`; a site switches them on, since Hugo does not merge
+`[outputs]` from modules):
+
+| output | switched on by | content |
+|---|---|---|
+| `/robots.txt` | `enableRobotsTXT = true` (above the first `[table]` in `hugo.toml`) | allows everyone, points to the sitemap and `/llms.txt` |
+| `/llms.txt`, `/llms-full.txt` | `[outputs] home = ["html", "rss", "llms", "llmsfull"]` | site summary (https://llmstxt.org): current edition, pages from the year's menu, program data, other editions; the full version adds the text of the year's pages |
+| `/YEAR/schedule/program.json`, `papers.json`, `program.ics` | `outputs: [html, rss, programjson, papersjson, programics]` in `content/YEAR/schedule/_index.md` | the schedule with talks and papers, the accepted papers and posters, the schedule as a calendar; linked from the schedule page |
+| JSON-LD in every page's head | `[params.YEAR.event]` with `startDate` (conference); the schedule (sessions) | schema.org `Event` for the conference on the home pages, and for each session with its papers as `ScholarlyArticle` |
 
 ## Tests
 

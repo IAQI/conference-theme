@@ -45,6 +45,18 @@
 	</div>
 	{{ end }}
 
+	{{/* downloads, when the schedule page has the outputs switched on
+	     (outputs: [html, rss, programjson, papersjson, programics]) */}}
+	{{ $downloads := slice }}
+	{{ with $.OutputFormats.Get "programics" }}{{ $downloads = $downloads | append (dict "url" .RelPermalink "label" "Calendar (iCal)") }}{{ end }}
+	{{ with $.OutputFormats.Get "programjson" }}{{ $downloads = $downloads | append (dict "url" .RelPermalink "label" "Program (JSON)") }}{{ end }}
+	{{ with $.OutputFormats.Get "papersjson" }}{{ $downloads = $downloads | append (dict "url" .RelPermalink "label" "Papers (JSON)") }}{{ end }}
+	{{ with $downloads }}
+	<p class="schedule-downloads">Download:
+		{{ range $i, $d := . }}{{ if $i }} · {{ end }}<a href="{{ $d.url }}">{{ $d.label }}</a>{{ end }}
+	</p>
+	{{ end }}
+
 	{{ with $topics }}
 	<ul class="topic-legend" aria-label="Topics">
 		{{ range . }}<li style="{{ printf "--topic-color: %s" .color | safeCSS }}">{{ .name }}</li>{{ end }}
