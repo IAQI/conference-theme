@@ -26,4 +26,14 @@
 	{{ end }}
 
 	{{ .Content }}
+	{{- /* A live year should not show the stand-ins of static/images/placeholder/
+	     (see docs/website-guide.md, "Stand-in images"). */ -}}
+	{{- if and (eq .Section (string site.Params.currentYear)) (not .Draft) -}}
+		{{- $logos := (index site.Params .Section).logos -}}
+		{{- $header := $logos.header | default "/images/placeholder/" -}}
+		{{- $banner := $logos.banner | default "/images/placeholder/" -}}
+		{{- if or (strings.Contains $header "/images/placeholder/") (strings.Contains $banner "/images/placeholder/") (strings.Contains .Content "/images/placeholder/") -}}
+			{{- warnf "%s is the current year but still shows stand-in images (/images/placeholder/): replace them, see the website guide" .Section -}}
+		{{- end -}}
+	{{- end }}
 {{ end }}

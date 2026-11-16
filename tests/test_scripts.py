@@ -192,9 +192,12 @@ HUGO_TOML = """[params]
 
 [params.2026]
   city = "Ottawa"
+  themeColor = "#ac191c"
   [params.2026.logos]
     jumbo = "/images/2026/logo.png"
+    header = "/images/2026/logo.png"
     banner = "/images/2026/missing.jpg"
+    social = "/images/2026/logo.png"
 
 [params.logos]
     footer = "/images/netlify.svg"
@@ -212,9 +215,13 @@ HUGO_TOML = """[params]
 
 PAGES = {
     "_index.md": '---\ntitle: Home\nyear: 2026\n---\n'
-                 '{{% jumbo img="/images/2026/logo.png" %}}\n'
+                 '{{% jumbo img="/images/2026/Ottawa.jpg" imgLabel="Ottawa"\n'
+                 '    logo="/images/2026/logo.png" %}}\n'
                  '{{% partners categories="gold" year=2026 %}}\n'
-                 '[history](/2026/history) and [old banner](/images/2026/missing.jpg)\n',
+                 '{{% home-location\n    image="/images/2026/venue.jpg"\n    address="Ottawa" %}}\n'
+                 '[history](/2026/history), [old banner](/images/2026/missing.jpg) '
+                 'and ![logo](/images/2026/logo.png)\n',
+    "venue/_index.html": '---\ntitle: Venue\nyear: 2026\n---\n<p>Ottawa</p>\n',
     "code-of-conduct.md": '---\naliases:\n  - /2026/attend/code-of-conduct/\ntitle: CoC\nyear: 2026\n---\n',
     "attend/registration.md": '---\ntitle: Registration\nyear: 2026\ndraft: false\nmenu:\n    2026:\n'
                               '        parent: attend\n---\n'
@@ -239,21 +246,43 @@ class NewYearTest(unittest.TestCase):
         (self.root / "static/images/2026/logo.png").write_bytes(b"png")
         (self.root / "hugo.toml").write_text(HUGO_TOML)
         (self.root / "data").mkdir()
-        run("new_year.py", "--year", "2027", cwd=self.root)
+        (self.root / "assets/style").mkdir(parents=True)
+        (self.root / "assets/style/theme-2026.scss").write_text(
+            '@use "theme";\n:root {\n    --primary: #ac191c; // Ottawa red\n'
+            '    --primary-txt: #ffffff;\n}\n.year-2026 { color: red; }\n')
+        self.out = run("new_year.py", "--year", "2027", cwd=self.root)
         self.new = self.root / "content" / "2027"
 
     def test_pages_copied(self):
-        copied = sorted(str(p.relative_to(self.new)) for p in self.new.rglob("*.md"))
+        copied = sorted(str(p.relative_to(self.new)) for p in self.new.rglob("*") if p.is_file())
         # plain folders (attend/) are copied, pages inside sections (speakers/, team/) are not
         self.assertEqual(copied, ["_index.md", "attend/registration.md", "code-of-conduct.md",
-                                  "speakers/_index.md", "team/_index.md"])
+                                  "speakers/_index.md", "team/_index.md", "venue/_index.html"])
+
+    def test_stand_ins(self):
+        home = (self.new / "_index.md").read_text()
+        self.assertIn('{{% jumbo img="/images/placeholder/background.svg" imgLabel="Ottawa"\n'
+                      '    logo="/images/placeholder/logo.svg" %}}', home)
+        self.assertIn('{{% home-location\n    address="Ottawa" %}}', home)  # no venue picture
+        params = (self.root / "hugo.toml").read_text().split("[params.2027]")[1].split("[params.logos]")[0]
+        self.assertIn('header = "/images/placeholder/header-logo.svg"', params)
+        self.assertIn('banner = "/images/placeholder/banner.svg"', params)
+        self.assertIn('jumbo = "/images/placeholder/background.svg"', params)
+        self.assertIn('social = "/images/2026/logo.png"', params)  # not a stand-in: kept
+        self.assertIn('themeColor = "#660038"', params)
+        style = (self.root / "assets/style/theme-2027.scss").read_text()
+        self.assertIn("--primary: #660038; // stand-in (IAQI maroon)", style)
+        self.assertNotIn("Ottawa red", style)
+        self.assertIn("--primary-txt: #ffffff;", style)      # the rest stays
+        self.assertIn(".year-2027 { color: red; }", style)
+        self.assertIn("/images/placeholder/", self.out)       # in the checklist
 
     def test_page_contents(self):
         home = (self.new / "_index.md").read_text()
         self.assertIn("year: 2027", home)
         self.assertIn("draft: true", home)
         self.assertIn('year=2027 %}}', home)
-        self.assertIn('img="/images/2026/logo.png"', home)     # existing file: kept
+        self.assertIn("![logo](/images/2026/logo.png)", home)  # existing file: kept
         self.assertIn("(/2027/history)", home)                 # page link: moved
         self.assertIn("(/images/2027/missing.jpg)", home)      # no such file: moved
         self.assertIn('year="2027"', (self.new / "speakers/_index.md").read_text())
@@ -268,7 +297,6 @@ class NewYearTest(unittest.TestCase):
         self.assertIn("currentYear = 2026", cfg)
         self.assertLess(cfg.index("[params.2027]"), cfg.index("[params.logos]"))
         self.assertLess(cfg.index("[params.2026.logos]"), cfg.index("[params.2027]"))
-        self.assertIn('jumbo = "/images/2026/logo.png"', cfg.split("[params.2027]")[1])
         self.assertLess(cfg.rindex("[[menu.2026]]"), cfg.index("[[menu.2027]]"))
         self.assertLess(cfg.index("[[menu.2027]]"), cfg.index("[languages]"))
         self.assertIn("pageRef = '/2027'", cfg)

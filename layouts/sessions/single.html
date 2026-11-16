@@ -107,7 +107,7 @@ RelPermalink: {{ .RelPermalink }}
 				<li>
 					<a class="visually-hidden" aria-hidden="true" href="{{ .Params.website }}" target="_blank">{{ .Params.name }}</a>
 					<a class="speaker" href="{{ .Params.website }}" target="_blank">
-						<div class="speaker-img" style="background-image: url({{ .Params.photoURL }});"></div>
+						<div class="speaker-img" style="background-image: url({{ .Params.photoURL | default "/images/placeholder/person.svg" }});"></div>
 						<strong class="speaker-name">{{ .Params.name }}</strong>
 						<span class="speaker-country">{{ .Params.city }}</span>
 						<div class="speaker-company">{{ .Params.company }}</div>

@@ -21,12 +21,19 @@ static/ (images, PDFs) keep pointing to the previous year until replaced.
 Other mentions of the previous year (dates, "QCrypt <from-year>") are left
 for you to update.
 
+The new year starts with the IAQI stand-in images of the shared theme
+(/images/placeholder/: background photo and logo on the home page, header logo
+and banner in hugo.toml) and IAQI maroon as its main colour, so that nothing
+of the previous year's design shows up. Each stand-in says what to deliver in
+its place; see https://github.com/IAQI/iaqi-brand#stand-ins-for-conference-websites
+
 Also:
   * hugo.toml: copies [params.<from-year>] (city, colours, logos) and the
     [[menu.<from-year>]] entries to the new year, next to the previous year's
-    blocks. It does not change currentYear or the "/" redirect; do that when
-    the new site goes live.
-  * assets/style/theme-<year>.scss: copy of the previous year's (colours!)
+    blocks; logos and themeColor become the stand-ins. It does not change
+    currentYear or the "/" redirect; do that when the new site goes live.
+  * assets/style/theme-<year>.scss: copy of the previous year's, with --primary
+    set to the stand-in colour
   * data/accepted-papers-<year>.json and posters-<year>.json: empty lists
 
 It prints a checklist of what to adapt by hand. With --check nothing is written.
@@ -36,6 +43,12 @@ import re
 import sys
 from pathlib import Path
 from urllib.parse import unquote
+
+
+STAND_IN = "/images/placeholder/"
+STAND_IN_COLOUR = "#660038"  # IAQI maroon
+STAND_IN_LOGOS = {"header": "header-logo.svg", "banner": "banner.svg", "jumbo": "background.svg"}
+PAGE_SUFFIXES = (".md", ".html")
 
 
 def latest_year(site):
@@ -55,18 +68,38 @@ def move_links(text, old, new, static=None):
     return re.sub(rf"(?:/[^\s\"'()<>\[\]]*)?/{old}/[^\s\"'()<>\[\]]*", link, text)
 
 
+def stand_ins(body):
+    """Home page: the stand-ins in the jumbo shortcode, and no venue picture."""
+    def jumbo(m):
+        s = re.sub(r'\bimg\s*=\s*"[^"]*"', f'img="{STAND_IN}background.svg"', m.group(0))
+        return re.sub(r'\blogo\s*=\s*"[^"]*"', f'logo="{STAND_IN}logo.svg"', s)
+    body = re.sub(r"\{\{[%<]\s*jumbo\b.*?[%>]\}\}", jumbo, body, flags=re.S)
+
+    def location(m):
+        return re.sub(r'\s*\bimage\s*=\s*"[^"]*"', "", m.group(0))
+    return re.sub(r"\{\{[%<]\s*home-location\b.*?[%>]\}\}", location, body, flags=re.S)
+
+
 def adapt_body(body, old, new, static=None):
     body = re.sub(rf"\byear\s*=\s*([\"']?){old}\1", rf"year=\g<1>{new}\g<1>", body)  # shortcodes
     body = re.sub(rf"([\w.+-]*){old}([\w.+-]*@)", rf"\g<1>{new}\g<2>", body)            # e-mails
-    return move_links(body, old, new, static)
+    return move_links(stand_ins(body), old, new, static)
+
+
+def stand_in_colour(scss, new):
+    """theme-<new>.scss: the first --primary becomes the stand-in colour."""
+    return re.sub(r"(--primary\s*:\s*)[^;]*;[^\n]*",
+                  rf"\g<1>{STAND_IN_COLOUR}; // stand-in (IAQI maroon). TODO: the {new} colour, also themeColor in hugo.toml",
+                  scss, count=1)
 
 
 def copied(rel, src):
-    """Top-level pages, every _index.md, and pages that are not inside a section
-    (no folder above them, within the year, has an _index.md)."""
-    if len(rel.parts) == 1 or rel.name == "_index.md":
+    """Top-level pages, every _index page, and pages that are not inside a section
+    (no folder above them, within the year, has an _index page)."""
+    if len(rel.parts) == 1 or rel.stem == "_index":
         return True
-    return not any((src / Path(*rel.parts[:i]) / "_index.md").exists() for i in range(1, len(rel.parts)))
+    return not any((src / Path(*rel.parts[:i]) / f"_index{s}").exists()
+                   for i in range(1, len(rel.parts)) for s in PAGE_SUFFIXES)
 
 
 def adapt_page(text, old, new, static=None):
@@ -112,7 +145,15 @@ def copy_config_blocks(text, old, new, static=None):
             continue
         copy = []
         for _, start, end in mine:
+            logos = lines[start].strip() == f"[params.{old}.logos]"
             for line in lines[start:end]:
+                key = re.match(r"^(\s*)([\w-]+)(\s*=\s*)", line)
+                if key and logos and key.group(2) in STAND_IN_LOGOS:
+                    line = (f'{key.group(1)}{key.group(2)}{key.group(3)}'
+                            f'"{STAND_IN}{STAND_IN_LOGOS[key.group(2)]}" # TODO: the {new} image')
+                elif key and key.group(2) == "themeColor":
+                    line = (f'{key.group(1)}themeColor{key.group(3)}"{STAND_IN_COLOUR}"'
+                            f' # stand-in (IAQI maroon); TODO: same as --primary in theme-{new}.scss')
                 line = re.sub(rf"(\[\[?(?:params|menu|menus)\.){old}\b", rf"\g<1>{new}", line)
                 line = move_links(line, old, new, static)
                 line = line.replace(f"'/{old}'", f"'/{new}'").replace(f'"/{old}"', f'"/{new}"')
@@ -145,9 +186,9 @@ def main(argv=None):
 
     static = site / "static"
     writes = []
-    for page in sorted(src.rglob("*.md")):
+    for page in sorted(src.rglob("*")):
         rel = page.relative_to(src)
-        if copied(rel, src):
+        if page.suffix in PAGE_SUFFIXES and page.is_file() and copied(rel, src):
             writes.append((dst / rel, adapt_page(page.read_text(encoding="utf-8"), old, new, static)))
 
     cfg = site / "hugo.toml"
@@ -156,7 +197,7 @@ def main(argv=None):
     style_old = site / "assets" / "style" / f"theme-{old}.scss"
     if style_old.exists():
         writes.append((site / "assets" / "style" / f"theme-{new}.scss",
-                       style_old.read_text(encoding="utf-8").replace(old, new)))
+                       stand_in_colour(style_old.read_text(encoding="utf-8").replace(old, new), new)))
     for name in (f"accepted-papers-{new}.json", f"posters-{new}.json"):
         if not (site / "data" / name).exists():
             writes.append((site / "data" / name, "[]\n"))
@@ -168,9 +209,12 @@ def main(argv=None):
             path.write_text(text, encoding="utf-8")
     print(f"""
 {len(writes) - 1} files from {old}; {n_blocks} hugo.toml blocks copied to {new}. Still to do by hand:
-  - hugo.toml [params.{new}]: city, timeanddate_cityid, themeColor, logos
-  - static/images/{new}/: logos and banner
-  - assets/style/theme-{new}.scss: colours (--primary, --primary-txt, ...)
+  - hugo.toml [params.{new}]: city, timeanddate_cityid
+  - images: replace the stand-ins ({STAND_IN}...) with files in static/images/{new}/:
+    the jumbo on the home page (img=, logo=) and [params.{new}.logos]; formats in
+    https://github.com/IAQI/iaqi-brand#stand-ins-for-conference-websites
+  - colours: --primary in assets/style/theme-{new}.scss and themeColor in hugo.toml
+    (now the stand-in IAQI maroon), --primary-txt, ...
   - content/{new}/: update each page, then set draft: false
   - when the {new} site goes live: params.currentYear and the "/" redirect in netlify.toml
   - later: accepted papers, schedule, presenters and videos (README, steps 1-4)""")
