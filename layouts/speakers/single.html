@@ -29,7 +29,7 @@
 				<a href="{{ .Permalink }}" class="talk tag-{{ anchorize (delimit .Params.tags "" ) }}">
 				<div class="tags">
 					{{ range .Params.tags }}
-						{{ range first 1 (where $.Site.Data.categories "key" .) }}
+						{{ range first 1 (where hugo.Data.categories "key" .) }}
 						<span>{{ .name }}</span>
 						{{ end }}
 					{{ end }}

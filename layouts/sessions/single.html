@@ -7,7 +7,7 @@
      videoId (+ videoTime), videoIds (older pages).
      Recordings listed in data/videos-YEAR.yml are embedded automatically. */}}
 {{ $currentYear := partial "program/year.html" . }}
-{{ $papers := index site.Data (printf "accepted-papers-%s" $currentYear) | default slice }}
+{{ $papers := index hugo.Data (printf "accepted-papers-%s" $currentYear) | default slice }}
 {{ $key := strings.TrimSuffix ".md" (strings.TrimPrefix (printf "%s/sessions/" $currentYear) (replace .File.Path "\\" "/")) }}
 
 <section class="talk">
@@ -20,7 +20,7 @@
 	{{ with $topic.color }}{{ $headerClasses = $headerClasses | append "has-topic" }}{{ end }}
 	<header{{ with $headerClasses }} class="{{ delimit . " " }}"{{ end }}{{ with $topic.color }} style="{{ printf "--topic-color: %s" . | safeCSS }}"{{ end }}>
 	{{ if .Params.tags }}
-	<div class="tags">{{- range .Params.tags -}}{{- range first 1 (where site.Data.categories "key" .) -}}<span>{{ .name }}</span>{{- end -}}{{- end -}}</div>
+	<div class="tags">{{- range .Params.tags -}}{{- range first 1 (where hugo.Data.categories "key" .) -}}<span>{{ .name }}</span>{{- end -}}{{- end -}}</div>
 	{{ end }}
 	{{/* the area's name, unless the session is called the same */}}
 	{{ if and $topic.color (ne $topic.name .Title) }}<span class="topic-chip">{{ $topic.name }}</span>{{ end }}
@@ -41,7 +41,7 @@
 			{{/* when is this session running? It may appear several times. */}}
 			{{ $days := slice }}
 			{{ $locations := slice }}
-			{{ $schedule := index site.Data (printf "schedule-%s" $currentYear) | default slice }}
+			{{ $schedule := index hugo.Data (printf "schedule-%s" $currentYear) | default slice }}
 			{{ range $day := $schedule }}
 				{{ $ranges := slice }}
 				{{ $open := "" }}

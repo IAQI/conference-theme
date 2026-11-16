@@ -15,7 +15,7 @@
 	{{ $authors = $authors | append $a }}
 {{ end }}
 {{ $out = merge $out (dict "authors" $authors) }}
-{{ $byYear := index site.Data (printf "presenters-%s" $year) | default dict }}
+{{ $byYear := index hugo.Data (printf "presenters-%s" $year) | default dict }}
 {{ with index $byYear (printf "%d" (int $paper.pid)) }}{{ $out = merge $out (dict "presenters" .) }}{{ end }}
 {{ with $paper.abstract }}{{ $out = merge $out (dict "abstract" (trim . " \n")) }}{{ end }}
 {{ with index ($paper.options | default dict) "arxiv-id" }}

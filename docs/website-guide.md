@@ -11,8 +11,11 @@ is specific to it (domains, people to ask, design notes).
 
 ## Working locally
 
-1. Install [Hugo](https://gohugo.io/installation/) (extended), [Dart Sass](https://gohugo.io/functions/css/sass/#dart-sass),
-   [Go](https://go.dev/dl/) (Hugo downloads this module with it) and Node.js (`npm ci` installs PostCSS).
+1. Install [Hugo](https://gohugo.io/installation/), [Dart Sass](https://gohugo.io/functions/css/sass/#dart-sass),
+   [Go](https://go.dev/dl/) (Hugo downloads this module with it) and Node.js (`npm ci` installs PostCSS),
+   for example with `brew install hugo go sass/sass/sass node`. Use the versions in the
+   site's `netlify.toml` (`HUGO_VERSION`, `DART_SASS_VERSION`, `GO_VERSION`) or newer;
+   the module needs Hugo 0.170.0 or later.
 2. Clone the website and run `hugo server`; the site is at http://localhost:1313/.
    `--disableFastRender` rebuilds everything on each change, `--ignoreCache` ignores cached files.
 3. Edit the Markdown files in `content/<year>/` and the data files in `data/`.

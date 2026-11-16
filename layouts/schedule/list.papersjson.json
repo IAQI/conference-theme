@@ -22,13 +22,13 @@
 {{- end -}}
 
 {{- $talks := slice -}}
-{{- range index site.Data (printf "accepted-papers-%s" $year) | default slice -}}
+{{- range index hugo.Data (printf "accepted-papers-%s" $year) | default slice -}}
 	{{- $r := partial "program/paper-record.html" (dict "paper" . "year" $year) -}}
 	{{- with index $where (printf "%d" (int .pid)) }}{{ $r = merge $r (dict "sessions" .) }}{{ end -}}
 	{{- $talks = $talks | append $r -}}
 {{- end -}}
 {{- $posters := slice -}}
-{{- range index site.Data (printf "posters-%s" $year) | default slice -}}
+{{- range index hugo.Data (printf "posters-%s" $year) | default slice -}}
 	{{- $posters = $posters | append (partial "program/paper-record.html" (dict "paper" . "year" $year)) -}}
 {{- end -}}
 

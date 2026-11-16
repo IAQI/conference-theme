@@ -16,7 +16,7 @@
 <section>
 	<h2 class="session-type-title">Tutorials</h2>
 	<ul class="talks">
-		{{ $sessions := (where .Site.AllPages ".Section" $currentYear) }}
+		{{ $sessions := (where site.Pages ".Section" $currentYear) }}
 		{{ $types := (slice "tutorial") }}
 		{{ range sort $sessions ".Title" }}
 		{{ if intersect (slice .Params.format) $types }}
@@ -27,7 +27,7 @@
 
 	<h2 class="session-type-title">Invited Talks</h2>
 	<ul class="talks">
-		{{ $sessions := (where .Site.AllPages ".Section" $currentYear) }}
+		{{ $sessions := (where site.Pages ".Section" $currentYear) }}
 		{{ $types := (slice "invited") }}
 		{{ range sort $sessions ".Title" }}
 		{{ if intersect (slice .Params.format) $types }}
@@ -38,7 +38,7 @@
 
 	<h2 class="session-type-title">Contributed Talks</h2>
 	<ul class="talks">
-		{{ $sessions := (where .Site.AllPages ".Section" $currentYear) }}
+		{{ $sessions := (where site.Pages ".Section" $currentYear) }}
 		{{ $types := (slice "contributed") }}
 		{{ range sort $sessions ".Title" }}
 		{{ if intersect (slice .Params.format) $types }}
@@ -49,7 +49,7 @@
 
 	<h2 class="session-type-title">Industry</h2>
 	<ul class="talks">
-		{{ $sessions := (where .Site.AllPages ".Section" $currentYear) }}
+		{{ $sessions := (where site.Pages ".Section" $currentYear) }}
 		{{ $types := (slice "industry") }}
 		{{ range sort $sessions ".Title" }}
 		{{ if intersect (slice .Params.format) $types }}

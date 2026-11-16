@@ -10,7 +10,7 @@
 {{- $lines := slice "BEGIN:VCALENDAR" "VERSION:2.0" (printf "PRODID:-//%s//conference-theme//EN" $host) "CALSCALE:GREGORIAN" "METHOD:PUBLISH" -}}
 {{- $lines = $lines | append (partial "program/ics-line.html" (dict "name" "X-WR-CALNAME" "value" $event.name)) -}}
 {{- with $tz }}{{ $lines = $lines | append (printf "X-WR-TIMEZONE:%s" .) }}{{ end -}}
-{{- $slots := index site.Data (printf "schedule-%s" $year) | default slice -}}
+{{- $slots := index hugo.Data (printf "schedule-%s" $year) | default slice -}}
 {{- range $day := $slots -}}
 	{{- range $slot := $day.sessions -}}
 		{{- with site.GetPage (printf "/%s/sessions/%s" $year $slot.session) -}}
