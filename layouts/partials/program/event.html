@@ -1,0 +1,48 @@
+{{/* Returns the facts of a year's edition, for agents and search engines
+     (JSON-LD, llms.txt, the program exports). Expects the year (string or int).
+
+     Read from the site's hugo.toml; every key is optional:
+
+       [params.2026]
+         city = "Ottawa, Canada"
+         [params.2026.event]
+           name = "QCrypt 2026"
+           startDate = "2026-08-24"
+           endDate = "2026-08-28"
+           timezone = "America/Toronto"     # IANA name; times in the schedule are local
+           venue = "Learning Crossroads (CRX), University of Ottawa"
+           address = "100 Louis-Pasteur Private, Ottawa, ON K1N 9N3, Canada"
+           attendanceMode = "offline"       # offline, online or mixed
+           status = "scheduled"             # scheduled, postponed, cancelled, movedOnline
+           registrationUrl = "/2026/attend/registration"
+           [[params.2026.event.deadlines]]
+             label = "Submission"
+             date = "2026-04-10"
+
+     Returns a dict with those keys (empty ones left out), plus "year", "name"
+     (default: site description and year), "city", "url" (the year's home
+     page) and "known" (true when startDate is set). */}}
+{{ $year := string . }}
+{{ $p := index site.Params $year | default dict }}
+{{ $e := $p.event | default dict }}
+{{ $out := dict "year" $year "name" ($e.name | default (printf "%s %s" site.Params.description $year)) }}
+{{ with site.GetPage (printf "/%s" $year) }}{{ $out = merge $out (dict "url" .Permalink) }}{{ end }}
+{{ with $p.city }}{{ $out = merge $out (dict "city" .) }}{{ end }}
+{{/* Hugo lower-cases param keys: startDate arrives as startdate */}}
+{{ range $key := slice "startDate" "endDate" "timezone" "venue" "address" "attendanceMode" "status" }}
+	{{ with index $e (lower $key) }}{{ $out = merge $out (dict $key (string .)) }}{{ end }}
+{{ end }}
+{{ with $e.registrationurl }}{{ $out = merge $out (dict "registrationUrl" (absURL .)) }}{{ end }}
+{{/* deadlines: a list of {label, date}, sorted by date (a table label = date
+     also works, but Hugo lower-cases its labels) */}}
+{{ with $e.deadlines }}
+	{{ $list := slice }}
+	{{ if reflect.IsMap . }}
+		{{ range $label, $date := . }}{{ $list = $list | append (dict "label" $label "date" (string $date)) }}{{ end }}
+	{{ else }}
+		{{ range . }}{{ $list = $list | append (dict "label" .label "date" (string .date)) }}{{ end }}
+	{{ end }}
+	{{ $out = merge $out (dict "deadlines" (sort $list "date")) }}
+{{ end }}
+{{ $out = merge $out (dict "known" (isset $out "startDate")) }}
+{{ return $out }}

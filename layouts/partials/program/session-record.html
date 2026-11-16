@@ -1,0 +1,60 @@
+{{/* Returns one slot of data/schedule-YEAR.yml as plain data, for the JSON
+     exports, the calendar and JSON-LD. Expects dict
+       page   the session page
+       slot   the slot ({session, time, end?, location?})
+       day    the date ("2026-08-24")
+       year
+       tz     IANA time zone of the conference (optional)
+
+     Returns dict: key, title, url, date, start, end (ISO 8601), rooms (labels),
+     format, tags, chair, speakers (names), papers (see paper-record.html),
+     video (URL), note. Empty fields are left out. */}}
+{{ $page := .page }}
+{{ $slot := .slot }}
+{{ $year := string .year }}
+{{ $p := $page.Params }}
+{{ $out := dict "key" $slot.session "title" $page.Title "url" $page.Permalink "date" .day
+	"start" (partial "program/datetime.html" (dict "date" .day "time" $slot.time "tz" .tz)) }}
+{{ with $slot.end }}{{ $out = merge $out (dict "end" (partial "program/datetime.html" (dict "date" $.day "time" . "tz" $.tz))) }}{{ end }}
+
+{{ with $slot.location }}
+	{{ $locationData := index site.Data (printf "locations-%s" $year) | default slice }}
+	{{ $keys := . }}
+	{{ if not (reflect.IsSlice $keys) }}{{ $keys = slice $keys }}{{ end }}
+	{{ $rooms := slice }}
+	{{ range $keys }}
+		{{ $k := . }}
+		{{ $label := $k }}
+		{{ range first 1 (where $locationData "key" $k) }}{{ $label = .label | default .name | default $k }}{{ end }}
+		{{ $rooms = $rooms | append $label }}
+	{{ end }}
+	{{ $out = merge $out (dict "rooms" $rooms) }}
+{{ end }}
+
+{{ with $p.format }}{{ $out = merge $out (dict "format" .) }}{{ end }}
+{{ with $p.tags }}{{ $out = merge $out (dict "tags" .) }}{{ end }}
+{{ with $p.note }}{{ $out = merge $out (dict "note" .) }}{{ end }}
+{{ $chair := string ($p.chair | default "") }}
+{{ if and $chair (not (in (slice "None" "none" "null" "TBA" "TBD") $chair)) }}{{ $out = merge $out (dict "chair" $chair) }}{{ end }}
+
+{{ with $p.speakers }}
+	{{ $names := slice }}
+	{{ range partial "program/speakers.html" (dict "keys" . "year" $year) }}{{ with .Params.name }}{{ $names = $names | append . }}{{ end }}{{ end }}
+	{{ with $names }}{{ $out = merge $out (dict "speakers" .) }}{{ end }}
+{{ end }}
+
+{{ $papers := index site.Data (printf "accepted-papers-%s" $year) | default slice }}
+{{ $records := slice }}
+{{ range $pid := $p.papers }}
+	{{ range first 1 (where $papers "pid" (int $pid)) }}
+		{{ $paper := . }}
+		{{ with index ($p.paperTitleOverrides | default dict) (string $pid) }}{{ $paper = merge $paper (dict "title" .) }}{{ end }}
+		{{ $records = $records | append (partial "program/paper-record.html" (dict "paper" $paper "year" $year)) }}
+	{{ end }}
+{{ end }}
+{{ with $records }}{{ $out = merge $out (dict "papers" .) }}{{ end }}
+
+{{ with (partial "program/video.html" (dict "year" $year "session" $slot.session)).id | default $p.videoId }}
+	{{ $out = merge $out (dict "video" (printf "https://youtu.be/%s" .)) }}
+{{ end }}
+{{ return $out }}

@@ -1,0 +1,63 @@
+{{/* Returns the text of /llms.txt (https://llmstxt.org): what the site is,
+     the current edition's facts ([params.YEAR.event], see
+     program/event.html), its pages (the year's menu), the machine-readable
+     program and the other editions. Used by home.llms.txt and
+     home.llmsfull.txt. Optional site params: archiveUrl (earlier editions
+     hosted elsewhere), email. */}}
+{{ $year := string site.Params.currentYear }}
+{{ $e := partial "program/event.html" $year }}
+{{ $L := slice (printf "# %s" site.Title) "" }}
+{{ $L = $L | append (printf "> %s. This file summarises the website for AI agents and other programs; the pages below have the details." (site.Params.description | default site.Title)) "" }}
+
+{{ $L = $L | append (printf "## %s" $e.name) "" }}
+{{ with $e.url }}{{ $L = $L | append (printf "- Website: %s" .) }}{{ end }}
+{{ if $e.startDate }}
+	{{ $dates := $e.startDate }}
+	{{ with $e.endDate }}{{ if ne . $e.startDate }}{{ $dates = printf "%s to %s" $e.startDate . }}{{ end }}{{ end }}
+	{{ $L = $L | append (printf "- Dates: %s" $dates) }}
+{{ end }}
+{{ $place := slice }}
+{{ with $e.venue }}{{ $place = $place | append . }}{{ end }}
+{{ with $e.address }}{{ $place = $place | append . }}{{ else }}{{ with $e.city }}{{ $place = $place | append . }}{{ end }}{{ end }}
+{{ with $place }}{{ $L = $L | append (printf "- Location: %s" (delimit . ", ")) }}{{ end }}
+{{ with $e.timezone }}{{ $L = $L | append (printf "- Time zone of the schedule: %s" .) }}{{ end }}
+{{ with $e.attendanceMode }}{{ $L = $L | append (printf "- Attendance: %s" (index (dict "offline" "in person" "online" "online" "mixed" "in person and online") . | default .)) }}{{ end }}
+{{ with $e.status }}{{ if ne . "scheduled" }}{{ $L = $L | append (printf "- Status: %s" .) }}{{ end }}{{ end }}
+{{ with $e.registrationUrl }}{{ $L = $L | append (printf "- Registration: %s" .) }}{{ end }}
+{{ with $e.deadlines }}
+	{{ $L = $L | append "- Deadlines:" }}
+	{{ range . }}{{ $L = $L | append (printf "  - %s: %s" .label .date) }}{{ end }}
+{{ end }}
+{{ with site.Params.email }}{{ $L = $L | append (printf "- Contact: %s" .) }}{{ end }}
+
+{{ with index site.Menus $year }}
+	{{ $L = $L | append "" "## Pages" "" }}
+	{{ range $entry := . }}
+		{{ $L = $L | append (printf "- %s" (partial "agents/menu-entry.html" $entry)) }}
+		{{ range $entry.Children }}
+			{{ $L = $L | append (printf "  - %s" (partial "agents/menu-entry.html" .)) }}
+		{{ end }}
+	{{ end }}
+{{ end }}
+
+{{ with site.GetPage (printf "/%s/schedule" $year) }}
+	{{ $data := slice }}
+	{{ with .OutputFormats.Get "programjson" }}{{ $data = $data | append (printf "- [Program (JSON)](%s): every session with start and end time, room, chair, speakers and papers (authors, abstracts, arXiv, videos)" .Permalink) }}{{ end }}
+	{{ with .OutputFormats.Get "papersjson" }}{{ $data = $data | append (printf "- [Accepted papers and posters (JSON)](%s): with the sessions presenting them" .Permalink) }}{{ end }}
+	{{ with .OutputFormats.Get "programics" }}{{ $data = $data | append (printf "- [Program (iCalendar)](%s): the schedule for calendar apps" .Permalink) }}{{ end }}
+	{{ with $data }}{{ $L = $L | append "" "## Program data" "" }}{{ $L = $L | append . }}{{ end }}
+{{ end }}
+
+{{ $years := slice }}
+{{ range site.Sections }}{{ if and (findRE `^\d{4}$` .Section) (ne .Section $year) }}{{ $years = $years | append .Section }}{{ end }}{{ end }}
+{{ if or $years site.Params.archiveUrl }}
+	{{ $L = $L | append "" "## Other editions" "" }}
+	{{ range sort $years "value" "desc" }}
+		{{ $o := partial "program/event.html" . }}
+		{{ $line := printf "- [%s](%s)" $o.name $o.url }}
+		{{ with $o.city }}{{ $line = printf "%s: %s" $line . }}{{ end }}
+		{{ $L = $L | append $line }}
+	{{ end }}
+	{{ with site.Params.archiveUrl }}{{ $L = $L | append (printf "- Earlier editions: %s" .) }}{{ end }}
+{{ end }}
+{{ return delimit $L "\n" }}

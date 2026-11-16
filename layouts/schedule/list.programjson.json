@@ -1,0 +1,14 @@
+{{- /* /YEAR/schedule/program.json: the schedule as data, for agents and other
+     programs. Switched on by `outputs: [html, rss, programjson, ...]` in the
+     schedule page's front matter (docs/website-guide.md, "Information for AI
+     agents"). Same sources as the schedule page. */ -}}
+{{- $year := partial "program/year.html" . -}}
+{{- $event := partial "program/event.html" $year -}}
+{{- $out := dict
+	"conference" (partial "program/event-public.html" $year)
+	"schedulePage" .Permalink
+	"timezone" ($event.timezone | default "local time of the conference")
+	"days" (partial "program/schedule-records.html" (dict "year" $year "tz" $event.timezone)) -}}
+{{- with .OutputFormats.Get "papersjson" }}{{ $out = merge $out (dict "papers" .Permalink) }}{{ end -}}
+{{- with .OutputFormats.Get "programics" }}{{ $out = merge $out (dict "calendar" .Permalink) }}{{ end -}}
+{{- $out | jsonify (dict "indent" "  ") -}}

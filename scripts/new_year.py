@@ -30,7 +30,8 @@ its place; see https://github.com/IAQI/iaqi-brand#stand-ins-for-conference-websi
 Also:
   * hugo.toml: copies [params.<from-year>] (city, colours, logos) and the
     [[menu.<from-year>]] entries to the new year, next to the previous year's
-    blocks; logos and themeColor become the stand-ins. It does not change
+    blocks; logos and themeColor become the stand-ins. [params.<from-year>.event]
+    (dates, venue, deadlines) is not copied. It does not change
     currentYear or the "/" redirect; do that when the new site goes live.
   * assets/style/theme-<year>.scss: copy of the previous year's, with --primary
     set to the stand-in colour
@@ -145,6 +146,8 @@ def copy_config_blocks(text, old, new, static=None):
             continue
         copy = []
         for _, start, end in mine:
+            if re.match(rf"^\[\[?params\.{old}\.event[\].]", lines[start].strip()):
+                continue  # dates, venue, deadlines: facts of the old year only
             logos = lines[start].strip() == f"[params.{old}.logos]"
             for line in lines[start:end]:
                 key = re.match(r"^(\s*)([\w-]+)(\s*=\s*)", line)
@@ -209,7 +212,9 @@ def main(argv=None):
             path.write_text(text, encoding="utf-8")
     print(f"""
 {len(writes) - 1} files from {old}; {n_blocks} hugo.toml blocks copied to {new}. Still to do by hand:
-  - hugo.toml [params.{new}]: city, timeanddate_cityid
+  - hugo.toml [params.{new}]: city, timeanddate_cityid; once known, add
+    [params.{new}.event] (name, dates, time zone, venue: for search engines and
+    AI agents; see docs/website-guide.md, "Information for AI agents")
   - images: replace the stand-ins ({STAND_IN}...) with files in static/images/{new}/:
     the jumbo on the home page (img=, logo=) and [params.{new}.logos]; formats in
     https://github.com/IAQI/iaqi-brand#stand-ins-for-conference-websites

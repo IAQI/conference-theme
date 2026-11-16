@@ -4,7 +4,8 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="HandheldFriendly" content="True">
 	<meta name="MobileOptimized" content="320">
-	<meta name="Description" content="{{ .Site.Params.description }}">
+	<meta name="Description" content="{{ with .Description }}{{ . }}{{ else }}{{ .Site.Params.description }}{{ end }}">
+	<link rel="canonical" href="{{ .Permalink }}">
 
 	{{ $currentYear := string .Site.Params.currentYear }}
 	{{ if not (eq .Section "") }}
@@ -58,6 +59,14 @@
 
 	<link href="{{ with .OutputFormats.Get "RSS" }}{{ .RelPermalink }}{{ end }}" rel="alternate" type="application/rss+xml" title="{{ .Site.Title }}"/>
 	<link href="{{ with .OutputFormats.Get "RSS" }}{{ .RelPermalink }}{{ end }}" rel="feed" type="application/rss+xml" title="{{ .Site.Title }}"/>
+
+	{{/* For AI agents and other programs (docs/website-guide.md, "Information for AI agents") */}}
+	{{ with site.Home.OutputFormats.Get "llms" }}<link rel="alternate" type="text/plain" href="{{ .Permalink }}" title="Summary for AI agents (llms.txt)">{{ end }}
+	{{ $titles := dict "programjson" "Program (JSON)" "papersjson" "Accepted papers and posters (JSON)" "programics" "Program (iCalendar)" }}
+	{{ range $f := .AlternativeOutputFormats }}{{ with index $titles $f.Name }}
+	<link rel="alternate" type="{{ $f.MediaType.Type }}" href="{{ $f.Permalink }}" title="{{ . }}">
+	{{ end }}{{ end }}
+	{{ partial "agents/jsonld.html" . }}
 
 	<link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700" rel="stylesheet">
 	

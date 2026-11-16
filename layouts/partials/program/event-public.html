@@ -1,0 +1,6 @@
+{{/* The edition's facts as published in the JSON exports and llms.txt:
+     event.html without the internal "known" flag. Expects the year. */}}
+{{ $e := partial "program/event.html" . }}
+{{ $out := dict }}
+{{ range $k, $v := $e }}{{ if ne $k "known" }}{{ $out = merge $out (dict $k $v) }}{{ end }}{{ end }}
+{{ return $out }}

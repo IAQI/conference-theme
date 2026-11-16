@@ -1,0 +1,17 @@
+{{- /* /llms-full.txt: llms.txt followed by the text of the current year's
+     pages, for agents that want everything in one request. Session pages are
+     left out: the program data (program.json) has them. */ -}}
+{{- partial "agents/llms.html" . }}
+
+{{ $year := string site.Params.currentYear -}}
+{{- range sort (where site.Pages "Section" $year) "RelPermalink" -}}
+{{- if and (not (strings.Contains .RelPermalink "/sessions/")) (ne (trim .Plain " \n") "") }}
+---
+
+# {{ .Title }}
+
+URL: {{ .Permalink }}
+
+{{ trim .Plain " \n" | htmlUnescape }}
+{{ end -}}
+{{- end -}}

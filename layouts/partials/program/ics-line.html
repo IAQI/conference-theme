@@ -1,0 +1,29 @@
+{{/* Returns one iCalendar content line "NAME:value" (RFC 5545): the value
+     escaped (unless raw) and folded into lines of at most 75 octets (`len`
+     counts bytes; `split ""` splits into characters, so multi-byte
+     characters are never cut). Expects dict "name", "value" and optionally
+     "raw" (true for dates and URLs). */}}
+{{ $v := string .value }}
+{{ if not .raw }}
+	{{ $v = replace $v "\\" "\\\\" }}
+	{{ $v = replace $v ";" "\\;" }}
+	{{ $v = replace $v "," "\\," }}
+	{{ $v = replace $v "\r" "" }}
+	{{ $v = replace $v "\n" "\\n" }}
+{{ end }}
+{{ $line := printf "%s:%s" .name $v }}
+{{ $out := "" }}
+{{ if le (len $line) 75 }}
+	{{ $out = $line }}
+{{ else }}
+	{{ $cur := "" }}
+	{{ range split $line "" }}
+		{{ if gt (add (len $cur) (len .)) 75 }}
+			{{ $out = printf "%s%s\r\n" $out $cur }}
+			{{ $cur = " " }}
+		{{ end }}
+		{{ $cur = printf "%s%s" $cur . }}
+	{{ end }}
+	{{ $out = printf "%s%s" $out $cur }}
+{{ end }}
+{{ return $out }}

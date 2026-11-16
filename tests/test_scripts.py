@@ -198,6 +198,13 @@ HUGO_TOML = """[params]
     header = "/images/2026/logo.png"
     banner = "/images/2026/missing.jpg"
     social = "/images/2026/logo.png"
+  [params.2026.event]
+    name = "Example 2026"
+    startDate = "2026-01-05"
+    venue = "Example Hall"
+    [[params.2026.event.deadlines]]
+      label = "Submission"
+      date = "2025-10-01"
 
 [params.logos]
     footer = "/images/netlify.svg"
@@ -301,6 +308,14 @@ class NewYearTest(unittest.TestCase):
         self.assertLess(cfg.index("[[menu.2027]]"), cfg.index("[languages]"))
         self.assertIn("pageRef = '/2027'", cfg)
         self.assertIn('pageRef = "/2027/partners"', cfg)
+
+    def test_event_facts_not_copied(self):
+        cfg = (self.root / "hugo.toml").read_text()
+        self.assertIn('venue = "Example Hall"', cfg)            # the old year keeps them
+        self.assertEqual(cfg.count('venue = "Example Hall"'), 1)
+        self.assertNotIn("[params.2027.event", cfg)
+        self.assertEqual(cfg.count('date = "2025-10-01"'), 1)
+        self.assertIn("[params.2027.event]", self.out)            # in the checklist
 
 
 if __name__ == "__main__":
