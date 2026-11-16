@@ -29,7 +29,7 @@ to the site and run
 | path | content |
 |---|---|
 | `content/<year>/` | one folder per conference year: home page `_index.md`, pages like `call.md`, `registration.md`, `charter.md`, `history.md`, `code-of-conduct.md`, and the sections `team/`, `partners/`, `speakers/`, `sessions/`, `schedule/` |
-| `data/` | accepted papers, posters, schedule, rooms, presenters, videos (`<kind>-<year>.json/.yml`), the footer (`footer.yml`) and the schedule categories (`categories.yml`) |
+| `data/` | accepted papers, posters, schedule, rooms, presenters, videos (`<kind>-<year>.json/.yml`), and the footer (`footer.yml`); the schedule categories come from the module's `data/categories.yml`, which a site may override with its own copy |
 | `static/images/<year>/` | logos, banner and background of that year |
 | `assets/style/theme-<year>.scss` | that year's colours (see [Colours and styles](#colours-and-styles)) |
 | `hugo.toml` | site settings, `[params.<year>]` (city, logos, colour, `event` facts for agents) and the menus per year |
@@ -335,9 +335,12 @@ replaced the file.
 
 ## Updating the module in a site
 
+In the site repository, run
+
 ```sh
-hugo mod get -u github.com/IAQI/conference-theme
+go get github.com/IAQI/conference-theme@<commit>
 ```
 
-then commit `go.mod` and `go.sum`. Netlify needs Go for this
+(`hugo mod get -u` fails while the module's own `go.mod` differs), then commit
+`go.mod` and `go.sum`. Netlify needs Go for this
 (`GO_VERSION` in `netlify.toml`). A site only changes when its pin is updated.
