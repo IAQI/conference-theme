@@ -21,8 +21,8 @@
      A session page can also name its area directly with `topic: <key>`. */}}
 {{ $currentYear := partial "program/year.html" . }}
 {{ $scheduleKey := printf "schedule-%s" $currentYear }}
-{{ $schedule := index site.Data $scheduleKey | default slice }}
-{{ $topics := index site.Data (printf "topics-%s" $currentYear) | default slice }}
+{{ $schedule := index hugo.Data $scheduleKey | default slice }}
+{{ $topics := index hugo.Data (printf "topics-%s" $currentYear) | default slice }}
 
 {{ $city := (index site.Params $currentYear).city }}
 {{ $timeanddate_cityid := (index site.Params $currentYear).timeanddate_cityid }}

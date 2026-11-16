@@ -2,7 +2,7 @@
      Expects dict "page" (the session page) and "year". The page's own
      `topic: <key>` wins; otherwise the area whose `sessions` lists its title.
      Returns {key, name, color, sessions}. */}}
-{{ $topics := index site.Data (printf "topics-%s" .year) | default slice }}
+{{ $topics := index hugo.Data (printf "topics-%s" .year) | default slice }}
 {{ $page := .page }}
 {{ $topic := dict }}
 {{ with $page.Params.topic }}

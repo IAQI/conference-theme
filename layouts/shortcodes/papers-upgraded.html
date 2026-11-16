@@ -1,6 +1,6 @@
 {{/* List of papers upgraded to talks, from data/accepted_upgraded.json (older years). */}}
 {{ $year := .Get "year" | default (partial "program/year.html" .Page) | string }}
-{{ $papers := site.Data.accepted_upgraded | default slice }}
+{{ $papers := hugo.Data.accepted_upgraded | default slice }}
 
 <section class="papers">
 	<div class="inner">

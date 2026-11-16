@@ -40,7 +40,7 @@
 	{{ $key := strings.TrimSuffix ".md" (strings.TrimPrefix (printf "%s/sessions/" $year) (replace .File.Path "\\" "/")) }}
 	{{ $page := . }}
 	{{ $events := slice }}
-	{{ range $day := index site.Data (printf "schedule-%s" $year) | default slice }}
+	{{ range $day := index hugo.Data (printf "schedule-%s" $year) | default slice }}
 		{{ range $slot := $day.sessions }}
 			{{ if eq $slot.session $key }}
 				{{ $s := partial "program/session-record.html" (dict "page" $page "slot" $slot "day" $day.day "year" $year "tz" $e.timezone) }}

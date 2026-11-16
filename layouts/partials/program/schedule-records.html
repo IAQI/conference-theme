@@ -4,7 +4,7 @@
      (the schedule page warns about them). */}}
 {{ $year := string .year }}
 {{ $tz := .tz }}
-{{ $schedule := index site.Data (printf "schedule-%s" $year) | default slice }}
+{{ $schedule := index hugo.Data (printf "schedule-%s" $year) | default slice }}
 {{ $days := slice }}
 {{ range $day := $schedule }}
 	{{ $sessions := slice }}

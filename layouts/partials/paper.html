@@ -56,7 +56,7 @@
 	</div>
 	{{ end }}
 
-	{{ $proceedings := index site.Data (printf "proceedings-%s" $year) | default dict }}
+	{{ $proceedings := index hugo.Data (printf "proceedings-%s" $year) | default dict }}
 	{{ with index $proceedings (printf "%d" $pid) }}
 	<div class="paper-proceedings">
 		<a href="https://doi.org/{{ . }}" target="_blank">[proceedings]</a>

@@ -71,6 +71,10 @@ HUGO_MODULE_REPLACEMENTS="github.com/IAQI/conference-theme -> ../conference-them
    get` fails here) and the updated `go.mod` / `go.sum`; its Netlify deploy
    preview shows the result. Netlify builds previews only for pull requests
    against `main`, so stacked pull requests get none.
+   The tool versions (`HUGO_VERSION`, `DART_SASS_VERSION`, `GO_VERSION`) are set
+   once in each site's `netlify.toml` and must be the same in all three sites;
+   `min` in this module's `hugo.toml` follows `HUGO_VERSION`. Use the current
+   Hugo API (`hugo.Data`, `site.Pages`, `.Type`), not deprecated calls.
 8. **Git:** work on a branch and open a pull request; never push to `main` and
    leave merging to a human maintainer. Commit only the files you meant to
    change.

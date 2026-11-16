@@ -12,7 +12,7 @@
 	<h2 class="speaker-type-title">{{ $label }}</h2>
 
 	<ul class="speakers">
-		{{ range sort (where (where $site.AllPages "Params.type" $type) "Params.year" $year) ".Params.surname" }}
+		{{ range sort (where (where $site.Pages "Type" $type) "Params.year" $year) ".Params.surname" }}
 		<li>{{ partial "speaker-simple.html" . }}</li>
 		{{ end }}
 	</ul>

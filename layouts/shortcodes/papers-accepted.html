@@ -10,7 +10,7 @@
 {{ $year := .Get "year" | default (partial "program/year.html" .Page) | string }}
 {{ $talkType := .Get "talk-type" }}
 {{ $presenters := ne (.Get "presenters" | default "true" | string) "false" }}
-{{ $papers := index site.Data (printf "accepted-papers-%s" $year) | default slice }}
+{{ $papers := index hugo.Data (printf "accepted-papers-%s" $year) | default slice }}
 {{ $list := $papers }}
 {{ with $talkType }}{{ $list = where $papers "options.talk-type" . }}{{ end }}
 

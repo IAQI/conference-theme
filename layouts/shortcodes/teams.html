@@ -13,7 +13,7 @@
 	{{ end }}
 
 	<ul class="members">
-		{{ range sort (where (where $site.AllPages "Params.type" $type) "Params.year" $year) ".Params.surname" }}
+		{{ range sort (where (where $site.Pages "Type" $type) "Params.year" $year) ".Params.surname" }}
 		<li>{{ partial "team.html" . }}</li>
 		{{ end }}
 	</ul>

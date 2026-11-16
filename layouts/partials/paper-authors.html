@@ -17,7 +17,7 @@
 {{ $italic := eq (.emphasis | default "strong") "em" }}
 {{ $presenters := slice }}
 {{ if ne .presenters false }}
-	{{ $byYear := index site.Data (printf "presenters-%s" (string .currentYear)) | default dict }}
+	{{ $byYear := index hugo.Data (printf "presenters-%s" (string .currentYear)) | default dict }}
 	{{ $presenters = index $byYear (printf "%d" (int $paper.pid)) | default slice }}
 {{ end }}
 {{ $authors := $paper.authors }}

@@ -13,7 +13,7 @@
 {{ $session := .session }}
 {{ $page := .page }}
 {{ $year := partial "program/year.html" $page }}
-{{ $papers := index site.Data (printf "accepted-papers-%s" $year) | default slice }}
+{{ $papers := index hugo.Data (printf "accepted-papers-%s" $year) | default slice }}
 
 {{/* Resolve the papers of this session once. */}}
 {{ $records := slice }}
@@ -63,7 +63,7 @@
 		{{ if $page.Params.tags }}
 		<div class="tags">
 			{{ range $page.Params.tags }}
-				{{ range first 1 (where site.Data.categories "key" .) }}
+				{{ range first 1 (where hugo.Data.categories "key" .) }}
 				<span>{{ .name }}</span>
 				{{ end }}
 			{{ end }}

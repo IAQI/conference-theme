@@ -12,12 +12,12 @@
        [{pid: 100, id: ..., presenter: ...}] */}}
 {{ $year := string .year }}
 {{ $v := dict }}
-{{ $data := index site.Data (printf "videos-%s" $year) | default dict }}
+{{ $data := index hugo.Data (printf "videos-%s" $year) | default dict }}
 {{ with .pid }}
 	{{ $key := printf "%d" (int .) }}
 	{{ with index ($data.papers | default dict) $key }}{{ $v = . }}{{ end }}
 	{{ if not $v.id }}
-		{{ $legacy := index site.Data (printf "youtube-%s" $year) | default slice }}
+		{{ $legacy := index hugo.Data (printf "youtube-%s" $year) | default slice }}
 		{{ range first 1 (where $legacy "pid" (int $key)) }}
 			{{ if .id }}{{ $v = dict "id" .id "presenter" .presenter }}{{ end }}
 		{{ end }}

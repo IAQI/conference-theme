@@ -18,7 +18,7 @@
 {{ with $slot.end }}{{ $out = merge $out (dict "end" (partial "program/datetime.html" (dict "date" $.day "time" . "tz" $.tz))) }}{{ end }}
 
 {{ with $slot.location }}
-	{{ $locationData := index site.Data (printf "locations-%s" $year) | default slice }}
+	{{ $locationData := index hugo.Data (printf "locations-%s" $year) | default slice }}
 	{{ $keys := . }}
 	{{ if not (reflect.IsSlice $keys) }}{{ $keys = slice $keys }}{{ end }}
 	{{ $rooms := slice }}
@@ -43,7 +43,7 @@
 	{{ with $names }}{{ $out = merge $out (dict "speakers" .) }}{{ end }}
 {{ end }}
 
-{{ $papers := index site.Data (printf "accepted-papers-%s" $year) | default slice }}
+{{ $papers := index hugo.Data (printf "accepted-papers-%s" $year) | default slice }}
 {{ $records := slice }}
 {{ range $pid := $p.papers }}
 	{{ range first 1 (where $papers "pid" (int $pid)) }}

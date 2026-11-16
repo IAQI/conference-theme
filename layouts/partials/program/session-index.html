@@ -6,7 +6,7 @@
      partialCached "program/session-index.html" $year $year. */}}
 {{ $year := string . }}
 {{ $s := newScratch }}
-{{ $schedule := index site.Data (printf "schedule-%s" $year) | default slice }}
+{{ $schedule := index hugo.Data (printf "schedule-%s" $year) | default slice }}
 {{ range $day := $schedule }}
 	{{ range $slot := $day.sessions }}
 		{{ with site.GetPage (printf "/%s/sessions/%s" $year $slot.session) }}

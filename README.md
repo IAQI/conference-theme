@@ -224,8 +224,10 @@ hugo mod get github.com/IAQI/conference-theme@main
 
 Commit `go.mod` and `go.sum`: they pin the exact version of the module. Hugo
 downloads that version at build time, which needs [Go](https://go.dev/dl/):
-locally, and on Netlify via `GO_VERSION = "1.23.4"` under `[build.environment]`
-in `netlify.toml`.
+locally, and on Netlify via `GO_VERSION` under `[build.environment]` in
+`netlify.toml`. The same section sets `HUGO_VERSION` (at least the `min` in this
+module's `hugo.toml`, currently 0.170.0) and `DART_SASS_VERSION`, once for all
+build contexts.
 
 Each year's stylesheet `assets/style/theme-YEAR.scss` in the site:
 
