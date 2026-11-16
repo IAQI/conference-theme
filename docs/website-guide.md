@@ -202,10 +202,24 @@ Use strong colours that are easy to tell apart (the TQC file uses eight).
    (from https://www.timeanddate.com/worldclock/personal.html, "Share This
    Personal World Clock"), `themeColor` (same as `--primary`) and the logos.
 4. **Colours** in `assets/style/theme-<year>.scss`.
+5. **Pages:** update each page in `content/<year>/` and set `draft: false`
+   when it is ready. Leave `currentYear` in `hugo.toml` unchanged until then.
+6. **Promote the year** once the new site is ready: in `hugo.toml` change
+   `params.currentYear`, `params.date` and the `/` redirect under
+   `[server]`; in `netlify.toml` change the `/` redirect.
+7. **Archive the old year** when it is no longer needed on the live site: move
+   it to the archive site (`qcrypt.iaqi.org`, `tqc.iaqi.org`, `qip.iaqi.org`),
+   delete `content/<year>/`, its data files, its `theme-<year>.scss` and its
+   `[params.<year>]` / `[[menu.<year>]]` blocks, and add a redirect
+   `/<year>/*` to the archive in `netlify.toml`.
+
+During the year: update the call, registration and venue pages as news comes
+in, and add a line to the "website updates" table on the home page each time.
 
 ### Stand-in images
 
-The theme ships IAQI-branded stand-ins in `static/images/placeholder/`, made in
+The theme ships IAQI-branded stand-ins in `assets/images/placeholder/`
+(published at `/images/placeholder/`), made in
 [IAQI/iaqi-brand](https://github.com/IAQI/iaqi-brand#stand-ins-for-conference-websites).
 Each one says what to deliver in its place:
 
@@ -223,20 +237,8 @@ logo, banner, person and sponsor stand-ins when that field is empty. To
 replace one, put the real file in `static/images/<year>/` and change the path.
 The new year's colour starts as IAQI maroon `#660038` (`--primary` and
 `themeColor`). Building the site warns when the current year
-(`params.currentYear`) still shows a stand-in.
-5. **Pages:** update each page in `content/<year>/` and set `draft: false`
-   when it is ready. Leave `currentYear` in `hugo.toml` unchanged until then.
-6. **Promote the year** once the new site is ready: in `hugo.toml` change
-   `params.currentYear`, `params.date` and the `/` redirect under
-   `[server]`; in `netlify.toml` change the `/` redirect.
-7. **Archive the old year** when it is no longer needed on the live site: move
-   it to the archive site (`qcrypt.iaqi.org`, `tqc.iaqi.org`, `qip.iaqi.org`),
-   delete `content/<year>/`, its data files, its `theme-<year>.scss` and its
-   `[params.<year>]` / `[[menu.<year>]]` blocks, and add a redirect
-   `/<year>/*` to the archive in `netlify.toml`.
-
-During the year: update the call, registration and venue pages as news comes
-in, and add a line to the "website updates" table on the home page each time.
+(`params.currentYear`) still shows a stand-in. A site can replace a stand-in
+everywhere with its own `assets/images/placeholder/<name>.svg`.
 
 ## Colours and styles
 

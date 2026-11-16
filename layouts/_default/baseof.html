@@ -12,43 +12,14 @@
     {{- end -}}
 ">
 
-<!-- Debug Info (only visible in development) -->
-{{ if hugo.IsProduction | not }}
-  {{ $currentYear := string .Site.Params.currentYear }}
-  {{ if not (eq .Section "") }}
-    {{ $currentYear = .Section }}
-  {{ end }}
-
-  <div style="background: #f0f0f0; padding: 10px; margin: 10px; font-family: monospace; font-size: 12px;">
-    <details>
-      <summary>Debug Info from _default/baseof.html </summary>
-      <pre>
-  Page Kind: {{ .Kind }}
-  RelPermalink: {{ .RelPermalink }}
-  Anchorized RelPermalink: {{ anchorize .RelPermalink }}
-  Section: {{ .Section }}
-  Section Type: {{ printf "%T" .Section }}
-  Section Type: {{ len .Section }}
-  Section empty? {{ eq .Section "" }}
-  Type: {{ .Type }}
-  Layout: {{ .Layout }}
-  Current Section: {{ .CurrentSection }}
-  Parent Section: {{ .CurrentSection.Parent }}
-  Params.currentYear: {{ .Site.Params.currentYear }}
-  Current Year: {{ $currentYear }}
-      </pre>
-    </details>
-  </div>
-{{ end }}
-
 {{ block "header" . }}
   {{ partial "header.html" . }}
 {{ end }}
 
 <main>
   {{ block "banner" . }}
-    {{/* The variable $currentYear is local, so we have to retrieve it in this block again, despite the code above.
-         Pages outside a year (tags, ...) use the current year's banner; without one, the IAQI stand-in is shown. */}}
+    {{/* The year of the page: its section, or params.currentYear for pages outside a year (tags, ...).
+         The banner is [params.YEAR.logos] banner; without one, the IAQI stand-in is shown. */}}
     {{ $currentYear := string .Site.Params.currentYear }}
     {{ if and (ne .Section "") (isset .Site.Params .Section) }}
       {{ $currentYear = .Section }}
@@ -69,7 +40,7 @@
   {{ partial "footer.html" . }}
 {{ end }}
 
-{{ partial "js.html" . }}
+{{ partial "js.html" . }}{{ partialCached "placeholders.html" . }}
 
 {{ block "scripts" . }}
   {{ printf "<!-- No extra scripts -->" | safeHTML }}
