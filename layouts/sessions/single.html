@@ -10,19 +10,6 @@
 {{ $papers := index site.Data (printf "accepted-papers-%s" $currentYear) | default slice }}
 {{ $key := strings.TrimSuffix ".md" (strings.TrimPrefix (printf "%s/sessions/" $currentYear) (replace .File.Path "\\" "/")) }}
 
-{{ if hugo.IsProduction | not }}
-<div style="background: #f0f0f0; padding: 10px; margin: 10px; font-family: monospace; font-size: 12px;">
-	<details>
-		<summary>Debug Info from sessions/single.html</summary>
-		<pre>
-Year: {{ $currentYear }}
-Schedule key: {{ $key }}
-RelPermalink: {{ .RelPermalink }}
-		</pre>
-	</details>
-</div>
-{{ end }}
-
 <section class="talk">
 
 	{{/* topic area (data/topics-YEAR.yml): the same colour strip as on the

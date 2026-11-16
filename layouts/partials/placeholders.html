@@ -1,0 +1,13 @@
+{{- /* Publishes the IAQI stand-in images, assets/images/placeholder/*.svg, at
+     /images/placeholder/ (see docs/website-guide.md, "Stand-in images").
+     Called once per build from baseof.html; prints nothing.
+
+     They are assets, not static files, on purpose: Hugo copies a module's
+     static/ files with the read-only permissions of the Go module cache, and
+     the next build into the same public/ folder (every `hugo server` restart)
+     then fails with "permission denied". Published resources are written as
+     normal files. A site can replace a stand-in with its own
+     assets/images/placeholder/<name>.svg. */ -}}
+{{- range resources.Match "images/placeholder/*.svg" -}}
+	{{- .Publish -}}
+{{- end -}}

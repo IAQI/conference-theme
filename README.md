@@ -40,7 +40,7 @@ websites get from that:
 | `assets/script/`, `assets/icons/` | scripts and icons |
 | `archetypes/`, `i18n/en.toml` | page templates for `hugo new`, interface texts |
 | `scripts/` | the pipeline scripts below and `new_year.py` (Python 3, `pip install -r requirements.txt`) |
-| `static/images/placeholder/` | IAQI stand-ins for a new year's images (see the guide, "Stand-in images"); copied from `placeholders/` of [IAQI/iaqi-brand](https://github.com/IAQI/iaqi-brand), where `tools/placeholders.py` makes them. Change them there and copy them over. |
+| `assets/images/placeholder/` | IAQI stand-ins for a new year's images (see the guide, "Stand-in images"), published at `/images/placeholder/` by `layouts/partials/placeholders.html`. They are assets rather than static files because Hugo copies a module's static files read-only, which breaks the next build into the same `public/`. Copied from `placeholders/` of [IAQI/iaqi-brand](https://github.com/IAQI/iaqi-brand), where `tools/placeholders.py` makes them; change them there and copy them over. |
 | `docs/` | [website-guide.md](docs/website-guide.md) (working on a site), [theme-reference.md](docs/theme-reference.md) (the original theme's blocks) |
 
 A site keeps its own `assets/style/theme-YEAR.scss` (colours), logos and
