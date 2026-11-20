@@ -10,6 +10,9 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash # -eo pipefail: a failing hugo before | tee fails the step
     env:
       HUGO_VERSION: 0.170.0
       DART_SASS_VERSION: 1.108.2
