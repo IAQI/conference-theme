@@ -2,14 +2,14 @@
 
      Looks in content/YEAR/sessions/slides/ for "<pid>.pdf" (or any other
      extension), or for the older naming "<Prefix><YEAR>TalkSlides<NNN>...",
-     where Prefix is site.Params.programFilePrefix (default "QCrypt").
+     where Prefix is site.Params.programFilePrefix (default "IAQI").
      Expects dict "year" and "pid". */}}
 {{ $year := string .year }}
 {{ $pid := int .pid }}
 {{ $url := "" }}
 {{ $dir := printf "/content/%s/sessions/slides" $year }}
 {{ if fileExists $dir }}
-	{{ $legacy := printf "%s%sTalkSlides%03d" (site.Params.programFilePrefix | default "QCrypt") $year $pid }}
+	{{ $legacy := printf "%s%sTalkSlides%03d" (site.Params.programFilePrefix | default "IAQI") $year $pid }}
 	{{ $plain := printf "%d." $pid }}
 	{{ range readDir $dir }}
 		{{ if or (hasPrefix .Name $plain) (hasPrefix .Name $legacy) }}

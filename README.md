@@ -27,6 +27,47 @@ websites get from that:
 - **Accepted papers.** Every paper has the anchor `#paper-<pid>` and links to
   the slot where it is presented and to its recording.
 
+## Using the theme for your conference
+
+The theme is not tied to QCrypt, TQC or QIP: any conference can use it
+([MIT license](LICENSE)). Its defaults carry neutral IAQI branding (stand-in
+images and the IAQI maroon), which you replace with your own.
+
+1. **Install** [Hugo](https://gohugo.io/installation/) 0.170.0 or later,
+   [Dart Sass](https://gohugo.io/functions/css/sass/#dart-sass),
+   [Go](https://go.dev/dl/) (Hugo downloads the theme with it) and Node.js
+   (for PostCSS), e.g. `brew install hugo go sass/sass/sass node`.
+2. **Start from the example site:** copy [`exampleSite/`](exampleSite/) to a
+   new repository, delete the `replacements = ...` line in its `hugo.toml`,
+   then run
+   ```sh
+   go get github.com/IAQI/conference-theme@v0.1.0   # or a later release
+   npm install
+   hugo server
+   ```
+   It is a small fictional conference (made-up people and papers) with the
+   pages and data files a site needs: home page, schedule, session pages,
+   accepted papers and posters, speakers, committees, sponsors, charter,
+   history and code of conduct.
+3. **Make it yours:** rename the conference in `hugo.toml` (`title`,
+   `[params]`, `[params.YEAR.event]`), your colour in
+   `assets/style/theme-YEAR.scss`, your logos under `[params.YEAR.logos]`
+   (until then the IAQI stand-ins are shown, with a build warning), and the
+   texts in `content/YEAR/`. The [website guide](docs/website-guide.md) explains
+   each part; the rest of this README covers the program pipeline from HotCRP.
+4. **Updating:** releases are listed in [CHANGELOG.md](CHANGELOG.md). Update
+   with `go get github.com/IAQI/conference-theme@vX.Y.Z` and commit `go.mod`
+   and `go.sum`. Any file of the theme can be replaced by putting your own
+   copy at the same path in your site (`layouts/`, `assets/`, `i18n/`, also
+   `assets/images/placeholder/` for the stand-ins).
+
+Parts that only work for the IAQI conferences: `scripts/quantumdb_presenters.py`
+(QuantumDB has only QIP, QCrypt and TQC), the title clean-up in
+`scripts/fetch_videos.py` (QCrypt/TQC/QIP video titles), and the stand-in
+colour that `scripts/new_year.py` puts into a new year. The HotCRP pipeline
+(`sanitize_hotcrp_json.py`, `generate_schedule.py`, `mark_presenters.py`)
+works for any conference that uses HotCRP.
+
 ## Contents
 
 | path | what |
@@ -250,7 +291,7 @@ Optional site parameters (`[params]` in `hugo.toml`):
 
 | parameter | default | effect |
 |---|---|---|
-| `programFilePrefix` | `"QCrypt"` | prefix of older slide files `<prefix><YEAR>TalkSlides<NNN>…` |
+| `programFilePrefix` | `"IAQI"` | prefix of older slide files `<prefix><YEAR>TalkSlides<NNN>…` |
 | `programScheduleSpeakers` | `true` | show speaker photos on schedule cards |
 | `archiveUrl` | none | where earlier editions are archived (e.g. `https://qcrypt.iaqi.org`), listed in `/llms.txt` |
 | `organizer` | none | `{name, url}` of the organizing body, in the conference's JSON-LD |
@@ -273,5 +314,7 @@ module's `hugo.toml`; a site switches them on, since Hugo does not merge
 python3 -m unittest discover tests
 ```
 
-The templates are checked by building the three websites before and after a
-change and comparing the HTML.
+The templates are checked by building [`exampleSite/`](exampleSite/)
+(`cd exampleSite && npm install && hugo`); GitHub Actions runs both on every
+pull request (`.github/workflows/check.yml`). Larger changes are also checked
+by building the three IAQI websites before and after and comparing the HTML.

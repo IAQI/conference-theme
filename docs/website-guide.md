@@ -1,13 +1,17 @@
-# Working on a conference website (QCrypt, TQC, QIP)
+# Working on a conference website
 
-The three websites ([qcrypt-website](https://github.com/IAQI/qcrypt-website),
-[tqc-website](https://github.com/IAQI/tqc-website),
-[qip-website](https://github.com/IAQI/qip-website)) are built the same way:
+This guide is for anyone working on a website built on `conference-theme`.
 [Hugo](https://gohugo.io/) turns Markdown and data files into a static site,
-[Netlify](https://www.netlify.com/) builds and publishes it on every push, and
-the look and the program pages come from this module, `conference-theme`.
-This guide describes what is common to all three; each site's README adds what
-is specific to it (domains, people to ask, design notes).
+and the look and the program pages come from this module. The examples are
+the three IAQI websites it was written for
+([qcrypt-website](https://github.com/IAQI/qcrypt-website),
+[tqc-website](https://github.com/IAQI/tqc-website),
+[qip-website](https://github.com/IAQI/qip-website)), which
+[Netlify](https://www.netlify.com/) builds and publishes on every push; each
+of them has a README with what is specific to it (domains, people to ask,
+design notes). A new site can start from the theme's
+[`exampleSite/`](../exampleSite/) (see the README, "Using the theme for your
+conference").
 
 ## Working locally
 
@@ -67,13 +71,13 @@ The most used ones:
 | `speakers`, `teams` | the speakers and the committees |
 | `button-link` | a button: `label=`, `url=`, `icon=` |
 | `papers-accepted`, `posters-accepted` | the accepted papers and posters (see the README) |
-| `code-of-conduct` | a standard code of conduct: `{{< code-of-conduct name="QCrypt" />}}`; a site can also keep its own text |
+| `code-of-conduct` | a standard code of conduct: `{{< code-of-conduct name="IAQI Example Conference" />}}`; a site can also keep its own text |
 
 The original theme's documentation of these blocks is in [theme-reference.md](theme-reference.md).
 
 ### Menus
 
-All three sites aim for the same top bar (modelled on the IACR conferences,
+The IAQI sites aim for the same top bar (modelled on the IACR conferences,
 e.g. https://eurocrypt.iacr.org/2026/):
 
 | top-level | identifier | weight | dropdown (only what exists) |

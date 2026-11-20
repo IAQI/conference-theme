@@ -1,0 +1,12 @@
+content:
+  - title: footer_about
+    links:
+      - nameKey: footer_charter
+        url: charter/
+        newTab: false
+      - nameKey: footer_history
+        url: history/
+        newTab: false
+      - nameKey: footer_coc
+        url: code-of-conduct/
+        newTab: false

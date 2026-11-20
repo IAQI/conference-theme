@@ -1,0 +1,29 @@
+[
+  {
+    "pid": 1,
+    "title": "An example result on quantum key distribution",
+    "abstract": "We show an example result. This abstract stands in for a real one and can use $\\LaTeX$ like $\\epsilon$-security.",
+    "authors": [
+      {"first": "Ada", "last": "Example", "affiliation": "University of Examples"},
+      {"first": "Ben", "last": "Sample", "affiliation": "Institute of Samples"}
+    ],
+    "options": {"arxiv-id": "2401.00001"}
+  },
+  {
+    "pid": 2,
+    "title": "A placeholder protocol for device-independent randomness",
+    "abstract": "A second fictional paper, presented in the same session.",
+    "authors": [
+      {"first": "Chen", "last": "Placeholder", "affiliation": "Example Labs"}
+    ]
+  },
+  {
+    "pid": 3,
+    "title": "Fictional bounds on quantum money",
+    "abstract": "A third fictional paper, with its own session.",
+    "authors": [
+      {"first": "Dana", "last": "Dummy", "affiliation": "University of Examples"},
+      {"first": "Ada", "last": "Example", "affiliation": "University of Examples"}
+    ]
+  }
+]
