@@ -81,7 +81,7 @@ works for any conference that uses HotCRP.
 | `assets/style/_program.scss`, `partials/`, `pages/` | the styles, by part of the site |
 | `assets/script/`, `assets/icons/` | scripts and icons |
 | `archetypes/`, `i18n/en.toml` | page templates for `hugo new`, interface texts |
-| `scripts/` | the pipeline scripts below and `new_year.py` (Python 3, `pip install -r requirements.txt`) |
+| `scripts/` | the pipeline scripts below and `new_year.py` (Python 3, `pip install -r requirements.txt`); `archive_year.py` and `archive_discovery.py` for the static archives (standard library only; see the guide, "Archiving a year") |
 | `assets/images/placeholder/` | IAQI stand-ins for a new year's images (see the guide, "Stand-in images"), published at `/images/placeholder/` by `layouts/partials/placeholders.html`. They are assets rather than static files because Hugo copies a module's static files read-only, which breaks the next build into the same `public/`. Copied from `placeholders/` of [IAQI/iaqi-brand](https://github.com/IAQI/iaqi-brand), where `tools/placeholders.py` makes them; change them there and copy them over. |
 | `docs/` | [website-guide.md](docs/website-guide.md) (working on a site), [theme-reference.md](docs/theme-reference.md) (the original theme's blocks) |
 

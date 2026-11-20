@@ -216,14 +216,142 @@ Use strong colours that are easy to tell apart (the TQC file uses eight).
 6. **Promote the year** once the new site is ready: in `hugo.toml` change
    `params.currentYear`, `params.date` and the `/` redirect under
    `[server]`; in `netlify.toml` change the `/` redirect.
-7. **Archive the old year** when it is no longer needed on the live site: move
-   it to the archive site (`qcrypt.iaqi.org`, `tqc.iaqi.org`, `qip.iaqi.org`),
-   delete `content/<year>/`, its data files, its `theme-<year>.scss` and its
-   `[params.<year>]` / `[[menu.<year>]]` blocks, and add a redirect
-   `/<year>/*` to the archive in `netlify.toml`.
+7. **Archive the old year** when it is no longer needed on the live site: see
+   [Archiving a year](#archiving-a-year).
 
 During the year: update the call, registration and venue pages as news comes
 in, and add a line to the "website updates" table on the home page each time.
+
+## Archiving a year
+
+Past editions live on static archive sites, one per series:
+[qcrypt.iaqi.org](https://qcrypt.iaqi.org), [tqc.iaqi.org](https://tqc.iaqi.org)
+and [qip.iaqi.org](https://qip.iaqi.org) (GitHub repositories
+`IAQI/<series>.iaqi.org`, one folder per year, served by GitHub Pages). A year
+moves there once the live site no longer needs it, usually when the year after
+next is set up. You can also make the copy earlier, as a frozen snapshot, and
+refresh it later (QCrypt 2026 was copied right after the conference).
+
+**Why a static copy.** The live sites are rebuilt from the current theme and
+data. A year that stays on the live site keeps changing with every theme
+update, and it has to be kept working forever. A static copy is the site as
+it was published: plain files that need no build, no Hugo version and no
+maintenance, and that keep working when the live site is redesigned.
+
+### The procedure
+
+Work in a fresh branch of the archive repository (examples for QCrypt 2026;
+`../qcrypt.iaqi.org` is the archive checkout next to the site):
+
+1. **Make the copy while the year is still live:**
+   ```sh
+   python3 -I ../conference-theme/scripts/archive_year.py --venue qcrypt --year 2026 \
+       --source https://qcrypt.net/2026/ ../qcrypt.iaqi.org
+   ```
+   It mirrors the year with `wget`, makes the copy self-contained under
+   `/2026/` and cleans it up (details below). At the end it lists links that
+   still point to the live site and local links whose file is missing. Links
+   to the current year on the live site are fine. Missing files are usually
+   pages that are only linked from JavaScript; fetch them with `wget` or leave
+   them out.
+2. **Look at it** in a browser: `cd ../qcrypt.iaqi.org && python3 -m http.server`,
+   then open http://localhost:8000/2026/ and click through the home page,
+   program, accepted papers, a session page and a PDF.
+3. **Landing page:** in the archive's `index.html` (for QIP:
+   `previousqips.html`), point the year's row in the past-editions table to
+   the static copy (`/2026/`).
+4. **Commit and open a pull request** in the archive repository. GitHub Pages
+   publishes it within a minute or two of the merge.
+5. **QuantumDB:** set the year's `archive_url` (and `archive_program_url`,
+   `archive_pc_url`, ... where they apply) in
+   `seeds/insert_<series>_conferences.sql` of
+   [QuantumDB](https://github.com/IAQI/QuantumDB), and in the production
+   database. Then run `archive_discovery.py` (below) again, so the archive's
+   `llms.txt` and the year's Event data pick up the final dates and place.
+6. **Remove the year from the live site,** in a branch of the Hugo site: delete
+   `content/<year>/`, its data files (`data/*-<year>.*`),
+   `assets/style/theme-<year>.scss`, and the `[params.<year>]` and
+   `[[menu.<year>]]` blocks in `hugo.toml`. Add **two** redirects to
+   `netlify.toml`, so that old links and search results keep working:
+   ```toml
+   [[redirects]]
+       from = "/2026"
+       to = "https://qcrypt.iaqi.org/2026/"
+       status = 301
+       force = true
+   [[redirects]]
+       from = "/2026/*"
+       to = "https://qcrypt.iaqi.org/2026/:splat"
+       status = 301
+       force = true
+   ```
+7. **Check** after the deploy: `curl -I https://qcrypt.net/2026/schedule/`
+   answers `301` with `location: https://qcrypt.iaqi.org/2026/schedule/`, and
+   `https://qcrypt.iaqi.org/llms.txt` and `/sitemap.xml` list the year. Search
+   Console needs nothing: the archive sites are registered and read their
+   sitemaps on their own.
+
+### What `archive_year.py` does to the copy
+
+- **Root assets move into the year.** The live site keeps its stylesheets,
+  favicons and some images at the root (`/css/`, `/images/`,
+  `/favicon-32x32.png`), shared by all years. In the archive every year has
+  its own copy, so these move into `<year>/` and the links to them are
+  rewritten (`../css/...` becomes `css/...`). Years never share files in the
+  archive, so a later copy cannot break an earlier one.
+- **Links become relative.** Absolute links into the year
+  (`https://qcrypt.net/2026/...`) become relative, so the copy works on any
+  host, including `localhost`. Links to other years stay as they are: the
+  archive has those years too, and the live site redirects to them.
+- **Subresource-Integrity hashes are removed.** Hugo adds `integrity="sha256-..."`
+  to stylesheets. `wget --convert-links` rewrites the `url(...)` references
+  inside the CSS, so the file no longer matches its hash and browsers refuse
+  to apply it: pages would show without styling.
+- **Analytics are removed.** Archived pages must not report visits to anyone,
+  so Google Analytics snippets (gtag.js, analytics.js, ga.js) are taken out.
+  Only scripts that do nothing else are removed.
+
+### Making the archives readable for search engines and AI agents
+
+`archive_discovery.py` keeps a few files at the root of each archive up to
+date. `archive_year.py` runs it, and you can run it on its own, for example
+after fixing a year by hand or after QuantumDB has new data:
+
+```sh
+python3 -I ../conference-theme/scripts/archive_discovery.py --venue qcrypt ../qcrypt.iaqi.org
+```
+
+- **`robots.txt`** welcomes every crawler, AI crawlers included, and points
+  to the sitemap. (The `robots.txt` files inside year folders come from the
+  original sites; crawlers ignore them, they only read the one at the root.)
+- **`sitemap.xml`** lists every archived page and PDF. Search engines use it
+  to find pages that no link leads to, such as the many PDFs.
+- **`llms.txt`** ([llmstxt.org](https://llmstxt.org)) is a map of the archive
+  for LLMs and agents: one section per year with dates, place and key pages
+  (program, accepted papers, committees), and links to the structured data in
+  [QuantumDB](https://quantumdb.iaqi.org). Agents that want lists of talks,
+  authors or committees should use QuantumDB's JSON and CSV exports rather
+  than scraping old HTML, and `llms.txt` tells them so.
+- **Event data:** each `<year>/index.html` gets a schema.org `Event`
+  (JSON-LD, between `<!-- iaqi-archive:event -->` markers) with name, dates,
+  place and links to QuantumDB and the original site, the same kind of data
+  the live sites publish (see [Information for AI agents](#information-for-ai-agents)).
+- **Landing page:** a `<link rel="alternate">` to `llms.txt` and a visible
+  "Data (QuantumDB)" link.
+
+Dates and places come from QuantumDB, so a year shows up in `llms.txt` and gets
+Event data once it is in QuantumDB. The script is idempotent: running it
+again changes nothing unless something changed. Commit its output with a
+subject starting with `archive-tools:`, so that the sitemap's "last modified"
+dates only count real content changes. With `--strip-analytics` (and
+optionally `--year`), it only removes Google Analytics snippets.
+
+### Very old years
+
+For sites that are gone, the archive repositories' READMEs describe how to
+recover them from the Wayback Machine (`wget` on a `web.archive.org/web/<timestamp>/`
+URL). Recovered years usually need hand fixes (missing images, links to
+`web.archive.org`). Commit those first, then run `archive_discovery.py`.
 
 ## Information for AI agents
 
