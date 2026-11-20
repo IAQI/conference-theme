@@ -19,10 +19,12 @@
 					{{ i18n "footer_follow_blog" }} <a href="{{ "blog/" | relLangURL }}">{{ i18n "footer_follow_blog_blog" }}</a>
 				</header>
 			</div> -->
+			{{/* the div stays when there are no links, so the email stays on the right */}}
 			<div class="follow">
+				{{ with hugo.Data.footer.follow }}
 				<header>{{ i18n "footer_follow_us" }}</header>
 				<ul class="social-list">
-					{{ range hugo.Data.footer.follow }}
+					{{ range . }}
 					<li>
 						<a href="{{ .url }}" class="social" rel="noreferrer" target="_blank">
 							{{ partial "icon.html" .name }}
@@ -31,6 +33,7 @@
 					</li>
 					{{ end }}
 				</ul>
+				{{ end }}
 			</div>
 
 			<div class="email">

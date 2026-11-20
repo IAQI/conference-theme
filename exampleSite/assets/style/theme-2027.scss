@@ -1,0 +1,6 @@
+// The shared theme (github.com/IAQI/conference-theme), then this year's colours.
+@use "theme";
+
+:root {
+    --primary: #660038; // IAQI maroon, the stand-in colour; also themeColor in hugo.toml
+}

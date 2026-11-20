@@ -1,0 +1,91 @@
+# A minimal conference website built on github.com/IAQI/conference-theme.
+# Copy this folder to start your own site; see the theme's README,
+# "Using the theme for your conference". Everything here is fictional.
+
+baseURL = "https://example.org/"
+locale = "en"
+title = "IAQI Example Conference"
+enableRobotsTXT = true
+
+[module]
+  # Only for building this example inside the theme's repository: use the
+  # theme from two folders up instead of downloading it. Delete this line in
+  # your own site (it then uses the version pinned in go.mod).
+  replacements = "github.com/IAQI/conference-theme -> ../.."
+  [[module.imports]]
+    path = "github.com/IAQI/conference-theme"
+
+# The home page blocks contain HTML.
+[markup.goldmark.renderer]
+  unsafe = true
+
+# Machine-readable outputs for AI agents (llms.txt); see the website guide.
+[outputs]
+  home = ["html", "rss", "llms", "llmsfull"]
+
+[params]
+  currentYear = 2027
+  description = "IAQI Example Conference"
+  conferenceName = "the IAQI Example Conference"
+  email = "webmaster@example.org"
+  keywords = "conference, example"
+  [params.organizer]
+    name = "Example Organizing Society"
+    url = "https://example.org/"
+
+# One table per conference year. Without logos, the IAQI stand-in images are
+# shown (assets/images/placeholder/ of the theme).
+[params.2027]
+  city = "Example City"
+  themeColor = "#660038" # same as --primary in assets/style/theme-2027.scss
+  # [params.2027.logos]
+  #   jumbo = "/images/2027/logo.png"
+  #   header = "/images/2027/logo-small.png"
+  #   banner = "/images/2027/banner.jpg"
+  # Facts for search engines and AI agents (JSON-LD, llms.txt, program.json).
+  [params.2027.event]
+    name = "IAQI Example Conference 2027"
+    startDate = "2027-09-06"
+    endDate = "2027-09-08"
+    timezone = "Europe/Amsterdam"
+    venue = "Example Conference Centre"
+    address = "1 Example Street, Example City"
+    attendanceMode = "offline"
+
+[server]
+  [[server.redirects]]
+    from = "/"
+    to = "/2027/"
+    status = 302
+    force = true
+
+# The top bar of each year; pages add themselves under a parent in their
+# front matter (menu: 2027: parent: program).
+[menu]
+  [[menu.2027]]
+    name = "Home"
+    weight = 10
+    identifier = "home"
+    pageRef = "/2027"
+  [[menu.2027]]
+    name = "Program"
+    weight = 20
+    identifier = "program"
+  [[menu.2027]]
+    name = "Attend"
+    weight = 30
+    identifier = "attend"
+  [[menu.2027]]
+    name = "Sponsors"
+    weight = 40
+    identifier = "sponsors"
+    pageRef = "/2027/partners"
+  [[menu.2027]]
+    name = "Committees"
+    weight = 50
+    identifier = "committees"
+    pageRef = "/2027/team"
+  [[menu.2027]]
+    name = "About"
+    weight = 60
+    identifier = "about"

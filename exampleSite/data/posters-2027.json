@@ -1,0 +1,8 @@
+[
+  {
+    "pid": 101,
+    "title": "A fictional poster",
+    "abstract": "Posters use the same format as talks.",
+    "authors": [{"first": "Eli", "last": "Instance", "affiliation": "Example Labs"}]
+  }
+]
