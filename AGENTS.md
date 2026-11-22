@@ -64,8 +64,19 @@ HUGO_MODULE_REPLACEMENTS="github.com/IAQI/conference-theme -> ../conference-them
    data. Never commit them, put them in test fixtures or send them to an
    external service; tests use made-up names.
 6. **Docs follow behaviour:** update README.md (pipeline, parameters) or
-   docs/website-guide.md (site work) in the same pull request.
-7. **Releasing to the sites:** a site only changes when its pin is updated.
+   docs/website-guide.md (site work) in the same pull request, and
+   `exampleSite/` when a site needs new settings or files.
+7. **Changelog:** every pull request that changes what sites get (layouts,
+   styles, shortcodes, i18n, archetypes, data, scripts, `hugo.toml`) adds a
+   line under `## Unreleased` in CHANGELOG.md: what changed, written for a
+   site maintainer, ending with the PR number once known. If sites have to do
+   something (a new required parameter, a renamed file, a changed default),
+   add it under `**Sites must:**`. The `changelog` check in GitHub Actions
+   fails without it; only a maintainer adds the `no changelog` label to skip
+   it, for changes sites don't see (CI, tests, typos in comments).
+8. **Releasing to the sites:** a site only changes when its pin is updated.
+   Other conferences use tagged releases (how to release: the top of
+   CHANGELOG.md); the IAQI sites may also pin a commit between releases.
    After a module pull request is merged, open a pull request in each site that
    needs it with `go get github.com/IAQI/conference-theme@<commit>` (`hugo mod
    get` fails here) and the updated `go.mod` / `go.sum`; its Netlify deploy
@@ -75,6 +86,6 @@ HUGO_MODULE_REPLACEMENTS="github.com/IAQI/conference-theme -> ../conference-them
    once in each site's `netlify.toml` and must be the same in all three sites;
    `min` in this module's `hugo.toml` follows `HUGO_VERSION`. Use the current
    Hugo API (`hugo.Data`, `site.Pages`, `.Type`), not deprecated calls.
-8. **Git:** work on a branch and open a pull request; never push to `main` and
+9. **Git:** work on a branch and open a pull request; never push to `main` and
    leave merging to a human maintainer. Commit only the files you meant to
    change.
